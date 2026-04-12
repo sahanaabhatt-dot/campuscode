@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/bg_dark"
+    android:orientation="vertical">
+
+    <!-- Toolbar -->
+    <LinearLayout android:layout_width="match_parent" android:layout_height="60dp"
+        android:background="@color/bg_card" android:orientation="horizontal"
+        android:gravity="center_vertical" android:paddingStart="16dp" android:paddingEnd="16dp">
+        <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1"
+            android:text="CampusCode" android:textColor="@color/accent_pink" android:textSize="20sp" android:textStyle="bold"/>
+        <TextView android:id="@+id/tvUserName" android:layout_width="wrap_content" android:layout_height="wrap_content"
+            android:textColor="@color/text_gray" android:textSize="14sp"/>
+    </LinearLayout>
+
+    <ScrollView android:layout_width="match_parent" android:layout_height="0dp" android:layout_weight="1">
+        <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:orientation="vertical" android:padding="16dp">
+
+            <!-- Welcome -->
+            <TextView android:id="@+id/tvWelcome" android:layout_width="wrap_content" android:layout_height="wrap_content"
+                android:text="Welcome Back!" android:textColor="@color/text_white" android:textSize="22sp"
+                android:textStyle="bold" android:layout_marginBottom="16dp"/>
+
+            <!-- Stats -->
+            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:orientation="horizontal" android:layout_marginBottom="24dp">
+                <LinearLayout android:layout_width="0dp" android:layout_height="80dp" android:layout_weight="1"
+                    android:background="@drawable/card_bg" android:orientation="vertical" android:gravity="center"
+                    android:layout_marginEnd="8dp">
+                    <TextView android:id="@+id/tvSolved" android:layout_width="wrap_content" android:layout_height="wrap_content"
+                        android:text="0" android:textColor="@color/accent_pink" android:textSize="24sp" android:textStyle="bold"/>
+                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                        android:text="Solved" android:textColor="@color/text_gray" android:textSize="12sp"/>
+                </LinearLayout>
+                <LinearLayout android:layout_width="0dp" android:layout_height="80dp" android:layout_weight="1"
+                    android:background="@drawable/card_bg" android:orientation="vertical" android:gravity="center"
+                    android:layout_marginStart="8dp">
+                    <TextView android:id="@+id/tvRate" android:layout_width="wrap_content" android:layout_height="wrap_content"
+                        android:text="0%" android:textColor="@color/easy_green" android:textSize="24sp" android:textStyle="bold"/>
+                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                        android:text="Success Rate" android:textColor="@color/text_gray" android:textSize="12sp"/>
+                </LinearLayout>
+            </LinearLayout>
+
+            <!-- Semester Selection -->
+            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                android:text="Select Semester" android:textColor="@color/text_white" android:textSize="18sp"
+                android:textStyle="bold" android:layout_marginBottom="12dp"/>
+
+            <HorizontalScrollView android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:layout_marginBottom="24dp">
+                <LinearLayout android:id="@+id/semesterContainer" android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" android:orientation="horizontal"/>
+            </HorizontalScrollView>
+
+            <!-- Subjects -->
+            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                android:text="Your Subjects" android:textColor="@color/text_white" android:textSize="18sp"
+                android:textStyle="bold" android:layout_marginBottom="12dp"/>
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/rvSubjects"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:nestedScrollingEnabled="false"/>
+        </LinearLayout>
+    </ScrollView>
+
+    <!-- Bottom Nav -->
+    <LinearLayout android:layout_width="match_parent" android:layout_height="60dp"
+        android:background="@color/bg_card" android:orientation="horizontal">
+        <TextView android:id="@+id/navDashboard" android:layout_width="0dp" android:layout_height="match_parent"
+            android:layout_weight="1" android:text="🏠 Home" android:gravity="center"
+            android:textColor="@color/accent_pink" android:textSize="12sp"/>
+        <TextView android:id="@+id/navProblems" android:layout_width="0dp" android:layout_height="match_parent"
+            android:layout_weight="1" android:text="📝 Problems" android:gravity="center"
+            android:textColor="@color/text_gray" android:textSize="12sp"/>
+        <TextView android:id="@+id/navProfile" android:layout_width="0dp" android:layout_height="match_parent"
+            android:layout_weight="1" android:text="👤 Profile" android:gravity="center"
+            android:textColor="@color/text_gray" android:textSize="12sp"/>
+    </LinearLayout>
+</LinearLayout>

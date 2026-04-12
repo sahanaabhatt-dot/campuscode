@@ -1,0 +1,15 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Run CampusCode",
+            "type": "node",
+            "request": "launch",
+            "program": "${workspaceFolder}/pavana/backend/server.js",
+            "cwd": "${workspaceFolder}/pavana/backend",
+            "console": "integratedTerminal",
+            "env": {},
+            "postDebugTask": "open-browser"
+        }
+    ]
+}

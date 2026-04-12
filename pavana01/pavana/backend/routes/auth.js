@@ -1,0 +1,190 @@
+const express = require('express');
+const router = express.Router();
+const jwt = require('jsonwebtoken');
+const bcrypt = require('bcryptjs');
+const nodemailer = require('nodemailer');
+const crypto = require('crypto');
+
+// Register
+router.post('/register', async (req, res) => {
+    const db = req.app.locals.db;
+    
+    try {
+        const { name, uucms, email, phone, password, semester } = req.body;
+
+        // Check if user already exists
+        const [existingUsers] = await db.query(
+            'SELECT * FROM users WHERE uucms = ? OR email = ?',
+            [uucms.toUpperCase(), email.toLowerCase()]
+        );
+
+        if (existingUsers.length > 0) {
+            const existing = existingUsers[0];
+            return res.status(400).json({ 
+                message: existing.uucms === uucms.toUpperCase()
+                    ? 'UUCMS number already registered' 
+                    : 'Email already registered' 
+            });
+        }
+
+        // Hash password
+        const salt = await bcrypt.genSalt(10);
+        const hashedPassword = await bcrypt.hash(password, salt);
+
+        // Insert new user
+        const [result] = await db.query(
+            'INSERT INTO users (name, uucms, email, phone, password, semester) VALUES (?, ?, ?, ?, ?, ?)',
+            [name, uucms.toUpperCase(), email.toLowerCase(), phone, hashedPassword, semester]
+        );
+
+        // Generate JWT token
+        const token = jwt.sign(
+            { userId: result.insertId, uucms: uucms.toUpperCase() },
+            process.env.JWT_SECRET,
+            { expiresIn: '7d' }
+        );
+
+        res.status(201).json({
+            message: 'Registration successful',
+            token,
+            user: {
+                id: result.insertId,
+                name,
+                uucms: uucms.toUpperCase(),
+                email: email.toLowerCase(),
+                phone,
+                semester
+            }
+        });
+    } catch (error) {
+        console.error('Registration error:', error);
+        res.status(500).json({ message: 'Server error during registration' });
+    }
+});
+
+// Login
+router.post('/login', async (req, res) => {
+    const db = req.app.locals.db;
+    
+    try {
+        const { uucms, password } = req.body;
+
+        // Find user
+        const [users] = await db.query(
+            'SELECT * FROM users WHERE uucms = ?',
+            [uucms.toUpperCase()]
+        );
+
+        if (users.length === 0) {
+            return res.status(401).json({ message: 'UUCMS number not registered' });
+        }
+
+        const user = users[0];
+
+        // Check password
+        const isMatch = await bcrypt.compare(password, user.password);
+        if (!isMatch) {
+            return res.status(401).json({ message: 'Incorrect password' });
+        }
+
+        // Generate JWT token
+        const token = jwt.sign(
+            { userId: user.id, uucms: user.uucms },
+            process.env.JWT_SECRET,
+            { expiresIn: '7d' }
+        );
+
+        res.json({
+            message: 'Login successful',
+            token,
+            user: {
+                id: user.id,
+                name: user.name,
+                uucms: user.uucms,
+                email: user.email,
+                phone: user.phone,
+                semester: user.semester
+            }
+        });
+    } catch (error) {
+        console.error('Login error:', error);
+        res.status(500).json({ message: 'Server error during login' });
+    }
+});
+
+// Forgot Password
+router.post('/forgot-password', async (req, res) => {
+    const db = req.app.locals.db;
+    
+    try {
+        const { uucms } = req.body;
+
+        const [users] = await db.query(
+            'SELECT * FROM users WHERE uucms = ?',
+            [uucms.toUpperCase()]
+        );
+
+        if (users.length === 0) {
+            return res.status(404).json({ message: 'UUCMS number not found' });
+        }
+
+        const user = users[0];
+
+        // Generate reset token
+        const resetToken = crypto.randomBytes(32).toString('hex');
+        const hashedToken = crypto.createHash('sha256').update(resetToken).digest('hex');
+        const expires = new Date(Date.now() + 3600000); // 1 hour
+
+        await db.query(
+            'UPDATE users SET reset_password_token = ?, reset_password_expires = ? WHERE id = ?',
+            [hashedToken, expires, user.id]
+        );
+
+        // Send email
+        const transporter = nodemailer.createTransport({
+            service: 'gmail',
+            auth: {
+                user: process.env.EMAIL_USER,
+                pass: process.env.EMAIL_PASS
+            }
+        });
+
+        const resetUrl = `http://localhost:3000/reset-password?token=${resetToken}`;
+        
+        await transporter.sendMail({
+            from: process.env.EMAIL_USER,
+            to: user.email,
+            subject: 'Password Reset - CampusCode',
+            html: `
+                <h2>Password Reset Request</h2>
+                <p>Hi ${user.name},</p>
+                <p>You requested to reset your password. Click the link below to reset:</p>
+                <a href="${resetUrl}">${resetUrl}</a>
+                <p>This link will expire in 1 hour.</p>
+                <p>If you didn't request this, please ignore this email.</p>
+            `
+        });
+
+        res.json({ message: 'Password reset link sent to your email' });
+    } catch (error) {
+        console.error('Forgot password error:', error);
+        res.status(500).json({ message: 'Error sending reset email' });
+    }
+});
+
+// Get registered users (for autocomplete)
+router.get('/registered-users', async (req, res) => {
+    const db = req.app.locals.db;
+    
+    try {
+        const [users] = await db.query(
+            'SELECT uucms, name FROM users ORDER BY created_at DESC'
+        );
+        res.json(users);
+    } catch (error) {
+        console.error('Error fetching users:', error);
+        res.status(500).json({ message: 'Error fetching users' });
+    }
+});
+
+module.exports = router;

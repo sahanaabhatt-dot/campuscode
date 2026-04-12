@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>About - CampusCode</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    
+    <header class="navbar">
+        <div class="logo"><img src="logo.svg" alt="CampusCode Logo" style="height: 40px; vertical-align: middle; margin-right: 8px;"><span style="font-family: 'Righteous', sans-serif; letter-spacing: 1px;">CampusCode</span></div>
+        <nav>
+            <a href="index.html">Home</a>
+            <a href="explore.html">Explore</a>
+            <a href="about.html">About</a>
+            <a href="contact.html">Contact</a>
+            <a href="login.html" id="navLogin">Login</a>
+            <a href="register.html" id="navRegister">Register</a>
+            <a href="dashboard.html" id="navDashboard" style="display:none; background:linear-gradient(135deg,#e91e63,#9c27b0); color:#fff; padding:0.4rem 1rem; border-radius:6px;">Dashboard</a>
+        </nav>
+    </header>
+
+    
+    <section class="about-section">
+        <div class="about-container">
+            <h2>About CampusCode</h2>
+            <p>CampusCode is a dedicated coding practice platform designed specifically for
+                 BCA (Bachelor of Computer Applications) students. We understand the
+                  challenges students face in mastering programming concepts aligned 
+                  with their academic curriculum.</p>
+            
+            <div class="about-features">
+                <div class="about-item">
+                    <h3>Our Mission</h3>
+                    <p>To provide BCA students with a structured,
+                         syllabus based coding practice environment that helps them excel in
+                          their academic journey and prepare for their professional careers.</p>
+                </div>
+                <div class="about-item">
+                    <h3>What We Offer</h3>
+                    <p>Semester wise organized problems, subject specific practice,
+                         real time code execution, progress tracking, and a comprehensive
+                          learning experience tailored to BCA curriculum.</p>
+                </div>
+                <div class="about-item">
+                    <h3>Our Vision</h3>
+                    <p>To become the go to platform for BCA students across institutions,
+                         helping thousands of students build strong programming foundations
+                          and achieve their career goals.</p>
+                </div>
+            </div>
+
+            <div class="about-stats">
+                <div class="stat-item">
+                    <h3>500+</h3>
+                    <p>Practice Problems</p>
+                </div>
+                <div class="stat-item">
+                    <h3>1000+</h3>
+                    <p>Active Students</p>
+                </div>
+                <div class="stat-item">
+                    <h3>6</h3>
+                    <p>Semesters Covered</p>
+                </div>
+                <div class="stat-item">
+                    <h3>24/7</h3>
+                    <p>Platform Access</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    
+    <section class="features">
+        <h2>Why Choose CampusCode?</h2>
+        <div class="feature-grid">
+            <div class="feature-card">
+                <div class="feature-icon">📚</div>
+                <h3>Syllabus Based</h3>
+                <p>Problems aligned with your BCA curriculum</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">💻</div>
+                <h3>Code Editor</h3>
+                <p>Practice coding directly in your browser</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">📊</div>
+                <h3>Track Progress</h3>
+                <p>Monitor your learning journey</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">🎯</div>
+                <h3>Semester Wise</h3>
+                <p>Organized by semesters 1-6</p>
+            </div>
+        </div>
+    </section>
+
+    
+    <footer class="footer">
+        <div class="footer-content">
+            <div class="footer-section">
+                <h3>CampusCode</h3>
+                <p>Your ultimate platform for BCA coding practice.
+                     Master programming with syllabus based problems.</p>
+            </div>
+            
+            <div class="footer-section">
+                <h4>Quick Links</h4>
+                <a href="index.html">Home</a>
+                <a href="about.html">About Us</a>
+                <a href="contact.html">Contact</a>
+                <a href="login.html">Login</a>
+            </div>
+            <div class="footer-section">
+                <h4>Connect With Us</h4>
+                <div class="social-links">
+                    <a href="https://facebook.com" target="_blank">Facebook</a>
+                    <a href="https://twitter.com" target="_blank">Twitter</a>
+                    <a href="https://instagram.com" target="_blank">Instagram</a>
+                    <a href="https://linkedin.com" target="_blank">LinkedIn</a>
+                </div>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2026 CampusCode. All rights reserved. | <a href="#">Privacy Policy</a> | <a href="#">Terms of Service</a></p>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+    <script>
+        const _u = localStorage.getItem('currentUser'), _t = localStorage.getItem('authToken');
+        if (_u && _t) {
+            document.getElementById('navLogin').style.display = 'none';
+            document.getElementById('navRegister').style.display = 'none';
+            document.getElementById('navDashboard').style.display = 'inline-block';
+        }
+    </script>
+</body>
+</html>

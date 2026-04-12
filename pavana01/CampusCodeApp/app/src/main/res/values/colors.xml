@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="bg_dark">#0F0A1A</color>
+    <color name="bg_card">#1A0A2E</color>
+    <color name="bg_input">#2A1A3D</color>
+    <color name="accent_pink">#E91E63</color>
+    <color name="text_white">#FFFFFF</color>
+    <color name="text_gray">#B0B0B0</color>
+    <color name="easy_green">#4ADE80</color>
+    <color name="medium_yellow">#FBBF24</color>
+    <color name="hard_red">#F87171</color>
+    <color name="border">#3D2A52</color>
+</resources>

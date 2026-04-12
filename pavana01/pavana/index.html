@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CampusCode - Home</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Righteous&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    
+    <header class="navbar">
+        <div class="logo"><img src="logo.svg" alt="CampusCode Logo" style="height: 40px; vertical-align: middle; margin-right: 8px;"><span style="font-family: 'Righteous', sans-serif; letter-spacing: 1px;">CampusCode</span></div>
+        <nav>2
+            <a href="index.html">Home</a>
+            <a href="explore.html">Explore</a>
+            <a href="about.html">About</a>
+            <a href="contact.html">Contact</a>
+            <a href="login.html" id="navLogin">Login</a>
+            <a href="register.html" id="navRegister">Register</a>
+            <a href="dashboard.html" id="navDashboard" style="display:none; background:linear-gradient(135deg,#e91e63,#9c27b0); color:#fff; padding:0.4rem 1rem; border-radius:6px;">Dashboard</a>
+        </nav>
+    </header>
+
+    
+    <section class="hero-home">
+        <div class="hero-content">
+            <h1>Master Coding with Your BCA Syllabus</h1>
+            <p>Practice semester wise and subject wise coding problems designed specifically for BCA students</p>
+            <div class="hero-buttons">
+                <a href="register.html" class="primary-btn">Start</a>
+                <a href="login.html" class="primary-btn">Login</a>
+            </div>
+        </div>
+    </section>
+
+    
+    <section class="features">
+        <h2>Why Choose CampusCode?</h2>
+        <div class="feature-grid">
+            <div class="feature-card">
+                <div class="feature-icon">📚</div>
+                <h3>Syllabus Based</h3>
+                <p>Problems aligned with your BCA curriculum for each semester</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">💻</div>
+                <h3>Multiple Languages</h3>
+                <p>Practice in C, C++, Java, Python and more</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">📊</div>
+                <h3>Track Progress</h3>
+                <p>Monitor your learning journey with detailed analytics</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">🎯</div>
+                <h3>Subject Wise Practice</h3>
+                <p>Focus on specific subjects and topics you need to master</p>
+            </div>
+        </div>
+    </section>
+
+    
+    <footer class="footer">
+        <div class="footer-content">
+            <div class="footer-section">
+                <h3>CampusCode</h3>
+                <p>Your ultimate platform for BCA coding practice.
+                     Master programming with syllabus based problems.</p>
+            </div>
+            
+            <div class="footer-section">
+                <h4>Quick Links</h4>
+                <a href="index.html">Home</a>
+                <a href="about.html">About Us</a>
+                <a href="contact.html">Contact</a>
+                <a href="login.html">Login</a>
+            </div>
+            <div class="footer-section">
+                <h4>Connect With Us</h4>
+                <div class="social-links">
+                    <a href="https://facebook.com" target="_blank">Facebook</a>
+                    <a href="https://twitter.com" target="_blank">Twitter</a>
+                    <a href="https://instagram.com" target="_blank">Instagram</a>
+                    <a href="https://linkedin.com" target="_blank">LinkedIn</a>
+                </div>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2026 CampusCode. All rights reserved. | <a href="#">Privacy Policy</a> | <a href="#">Terms of Service</a></p>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+    <script>
+
+        const _user = localStorage.getItem('currentUser');
+        const _token = localStorage.getItem('authToken');
+        if (_user && _token) {
+            document.getElementById('navLogin').style.display = 'none';
+            document.getElementById('navRegister').style.display = 'none';
+            document.getElementById('navDashboard').style.display = 'inline-block';
+        }
+    </script>
+</body>
+</html>

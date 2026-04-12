@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Problem - CampusCode</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Righteous&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { background: #0f0a1a; color: #e0e0e0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; height: 100vh; display: flex; flex-direction: column; }
+        .top-bar { background: #1a0a2e; border-bottom: 1px solid #2a1a3d; padding: 0.5rem 1rem; display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-shrink: 0; }
+        .top-bar-left { display: flex; align-items: center; gap: 1rem; }
+        .top-bar-logo { font-family: 'Righteous', sans-serif; color: #e91e63; font-size: 1.1rem; text-decoration: none; }
+        .nav-arrows button { background: none; border: none; color: #b0b0b0; cursor: pointer; padding: 0.3rem 0.5rem; font-size: 1.2rem; border-radius: 4px; }
+        .nav-arrows button:hover { background: #2a1a3d; color: #fff; }
+        .run-btn { background: #2a1a3d; border: 1px solid #3d2a52; color: #4ade80; padding: 0.35rem 1rem; border-radius: 5px; cursor: pointer; font-size: 0.85rem; transition: all 0.2s; }
+        .run-btn:hover { background: #3d2a52; }
+        .run-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        .submit-btn { background: #4ade80; border: none; color: #0f0a1a; padding: 0.35rem 1rem; border-radius: 5px; cursor: pointer; font-size: 0.85rem; font-weight: 600; transition: all 0.2s; }
+        .submit-btn:hover { background: #22c55e; }
+        .submit-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        .main-layout { display: flex; flex: 1; overflow: hidden; }
+        .left-panel { width: 40%; min-width: 280px; border-right: 1px solid #2a1a3d; display: flex; flex-direction: column; overflow: hidden; }
+        .panel-tabs { display: flex; background: #150a25; border-bottom: 1px solid #2a1a3d; flex-shrink: 0; }
+        .panel-tab { padding: 0.6rem 1.2rem; font-size: 0.85rem; color: #b0b0b0; cursor: pointer; border-bottom: 2px solid transparent; }
+        .panel-tab.active { color: #fff; border-bottom-color: #e91e63; }
+        .panel-content { flex: 1; overflow-y: auto; padding: 1.5rem; }
+        .problem-title { font-size: 1.2rem; font-weight: 700; color: #fff; margin-bottom: 0.8rem; }
+        .problem-badges { display: flex; gap: 0.5rem; margin-bottom: 1.2rem; flex-wrap: wrap; }
+        .badge { padding: 0.2rem 0.7rem; border-radius: 12px; font-size: 0.78rem; font-weight: 600; }
+        .badge-easy { background: rgba(74,222,128,0.15); color: #4ade80; }
+        .badge-medium { background: rgba(251,191,36,0.15); color: #fbbf24; }
+        .badge-hard { background: rgba(248,113,113,0.15); color: #f87171; }
+        .badge-topic { background: #2a1a3d; color: #b0b0b0; }
+        .problem-desc { color: #c0c0c0; line-height: 1.7; font-size: 0.92rem; margin-bottom: 1.2rem; }
+        .example-box { background: #1a0a2e; border: 1px solid #2a1a3d; border-radius: 8px; padding: 1rem; margin-bottom: 1rem; font-size: 0.88rem; }
+        .example-box strong { color: #fff; display: block; margin-bottom: 0.5rem; }
+        .example-box pre { color: #c0c0c0; white-space: pre-wrap; font-family: 'Courier New', monospace; }
+        .right-panel { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+        .editor-header { background: #150a25; border-bottom: 1px solid #2a1a3d; padding: 0.5rem 1rem; display: flex; align-items: center; gap: 1rem; flex-shrink: 0; }
+        .lang-select { background: #2a1a3d; border: 1px solid #3d2a52; color: #e0e0e0; padding: 0.3rem 0.7rem; border-radius: 5px; font-size: 0.85rem; cursor: pointer; }
+        .editor-wrapper { flex: 1; display: flex; overflow: hidden; background: #0d0d1a; }
+        .line-numbers { background: #0d0d1a; color: #444; font-family: 'Courier New', monospace; font-size: 0.9rem; line-height: 1.6; padding: 1rem 0.5rem 1rem 1rem; text-align: right; user-select: none; min-width: 45px; border-right: 1px solid #1a1a2e; overflow: hidden; }
+        .code-area { flex: 1; background: #0d0d1a; color: #e0e0e0; border: none; outline: none; padding: 1rem 1rem 1rem 0.8rem; font-family: 'Courier New', monospace; font-size: 0.9rem; resize: none; line-height: 1.6; tab-size: 4; }
+        .bottom-panel { border-top: 1px solid #2a1a3d; background: #150a25; flex-shrink: 0; height: 200px; min-height: 80px; max-height: 70vh; display: flex; flex-direction: column; }
+        .bottom-resize-handle { height: 5px; background: #2a1a3d; cursor: ns-resize; flex-shrink: 0; transition: background 0.2s; }
+        .bottom-resize-handle:hover { background: #e91e63; }
+        .bottom-tabs { display: flex; border-bottom: 1px solid #2a1a3d; }
+        .bottom-tab { padding: 0.5rem 1rem; font-size: 0.83rem; color: #b0b0b0; cursor: pointer; border-bottom: 2px solid transparent; }
+        .bottom-tab.active { color: #fff; border-bottom-color: #e91e63; }
+        .testcase-content { padding: 0.8rem 1rem; overflow-y: auto; flex: 1; }
+        .testcase-input { background: #1a0a2e; border: 1px solid #2a1a3d; border-radius: 5px; padding: 0.5rem 0.8rem; color: #e0e0e0; font-family: monospace; font-size: 0.85rem; width: 100%; margin-top: 0.3rem; }
+        .testcase-label { color: #666; font-size: 0.8rem; margin-bottom: 0.2rem; }
+        .result-box { padding: 0.8rem 1rem; font-size: 0.88rem; overflow-y: auto; max-height: 160px; }
+        .timer-box {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: #2a1a3d;
+            border: 1px solid #3d2a52;
+            border-radius: 6px;
+            padding: 0.3rem 0.8rem;
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: #e0e0e0;
+            min-width: 90px;
+            justify-content: center;
+            transition: all 0.3s;
+        }
+        .timer-box.warning { border-color: #fbbf24; color: #fbbf24; background: rgba(251,191,36,0.1); }
+        .timer-box.danger  { border-color: #f87171; color: #f87171; background: rgba(248,113,113,0.15); animation: pulse 1s infinite; }
+        @keyframes pulse { 0%,100% { opacity:1; } 50% { opacity:0.5; } }
+        .timer-modal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.7);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+        .timer-modal.show { display: flex; }
+        .timer-modal-box {
+            background: #1a0a2e;
+            border: 1px solid #e91e63;
+            border-radius: 12px;
+            padding: 2rem 2.5rem;
+            text-align: center;
+            max-width: 360px;
+        }
+        .timer-modal-box h2 { color: #f87171; font-size: 1.4rem; margin-bottom: 0.8rem; }
+        .timer-modal-box p  { color: #b0b0b0; margin-bottom: 1.5rem; font-size: 0.95rem; }
+        .timer-modal-box button { background: #e91e63; border: none; color: #fff; padding: 0.6rem 1.5rem; border-radius: 6px; cursor: pointer; font-size: 0.95rem; margin: 0.3rem; }
+        .timer-modal-box .btn-secondary { background: #2a1a3d; border: 1px solid #3d2a52; }
+    </style>
+</head>
+<body>
+    <div class="top-bar">
+        <div class="top-bar-left">
+            <a href="problems.html" class="top-bar-logo"><img src="logo.svg" alt="CampusCode Logo" style="height:32px; vertical-align:middle; margin-right:6px;"><span style="font-family:'Righteous',sans-serif; letter-spacing:1px;">CampusCode</span></a>
+            <div class="nav-arrows">
+                <button onclick="prevProblem()" title="Previous">&#8249;</button>
+                <button onclick="nextProblem()" title="Next">&#8250;</button>
+            </div>
+        </div>
+        <div style="display:flex; align-items:center; gap:0.8rem;">
+            <div class="timer-box" id="timerBox">10:00</div>
+            <button class="run-btn" id="runBtn" onclick="runCode()">▶ Run</button>
+            <button class="submit-btn" id="submitBtn" onclick="submitCode()">Submit</button>
+        </div>
+        <div>
+            <a href="dashboard.html" style="color:#b0b0b0; font-size:0.85rem; text-decoration:none; margin-right:1rem;">Dashboard</a>
+            <a href="profile.html" style="color:#b0b0b0; font-size:0.85rem; text-decoration:none;">Profile</a>
+        </div>
+    </div>
+
+    <div class="main-layout">
+        <div class="left-panel" id="leftPanel">
+            <div class="panel-tabs">
+                <div class="panel-tab active" onclick="switchTab(this,'descTab')">Description</div>
+                <div class="panel-tab" onclick="switchTab(this,'submissionsTab')">Submissions</div>
+            </div>
+            <div class="panel-content" id="descTab">
+                <div class="problem-title" id="problemTitle">Loading...</div>
+                <div class="problem-badges" id="problemBadges"></div>
+                <div class="problem-desc" id="problemDesc"></div>
+                <div id="problemExamples"></div>
+            </div>
+            <div class="panel-content" id="submissionsTab" style="display:none;">
+                <div id="submissionsList"><p style="color:#666; margin-top:2rem; text-align:center;">No submissions yet.</p></div>
+            </div>
+        </div>
+
+        <div class="resizer" id="resizer"></div>
+
+        <div class="right-panel">
+            <div class="editor-header">
+                <select class="lang-select" id="langSelect">
+                    <option value="c">C</option>
+                    <option value="python" selected>Python</option>
+                    <option value="java">Java</option>
+                    <option value="php">PHP</option>
+                    <option value="r">R</option>
+                </select>
+                <span style="color:#666; font-size:0.8rem;">Auto</span>
+            </div>
+            <div class="editor-wrapper">
+                <div class="line-numbers" id="lineNumbers">1</div>
+                <textarea class="code-area" id="codeEditor" spellcheck="false"></textarea>
+            </div>
+            <div class="bottom-resize-handle" id="bottomResizer"></div>
+            <div class="bottom-panel" id="bottomPanel">
+                <div class="bottom-tabs">
+                    <div class="bottom-tab active">Output</div>
+                </div>
+                <div class="testcase-content" id="resultPanel">
+                    <div id="inputSection" style="display:none; margin-bottom:0.5rem;">
+                        <div style="color:#fbbf24; font-size:0.8rem; margin-bottom:0.4rem;">⚠ Your program needs input:</div>
+                        <input class="testcase-input" id="testInput" type="text" placeholder="Enter input here...">
+                    </div>
+                    <div class="result-box" id="resultBox" style="color:#666;">Click Run to execute your code...</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="data/syllabus.js"></script>
+    <script src="script.js"></script>
+    <script>
+        let selectedSubject = null;
+        let currentIndex = 0;
+        let submissions = [];
+        const COMPILER_URL = 'http://localhost:5000/api/compiler/run';
+
+        // ── Timer ──────────────────────────────────────────────
+        const TIMER_LIMITS = { easy: 3 * 60, medium: 6 * 60, hard: 10 * 60 };
+        let timerSeconds = 3 * 60;
+        let timerInterval = null;
+
+        function startTimer(difficulty) {
+            timerSeconds = TIMER_LIMITS[difficulty] || 6 * 60;
+            clearInterval(timerInterval);
+            updateTimerDisplay();
+            timerInterval = setInterval(() => {
+                timerSeconds--;
+                updateTimerDisplay();
+                if (timerSeconds <= 0) {
+                    clearInterval(timerInterval);
+                    onTimerEnd();
+                }
+            }, 1000);
+        }
+
+        function updateTimerDisplay() {
+            const mins = Math.floor(timerSeconds / 60);
+            const secs = timerSeconds % 60;
+            const display = `${String(mins).padStart(2,'0')}:${String(secs).padStart(2,'0')}`;
+            const box = document.getElementById('timerBox');
+            box.textContent = display;
+            box.className = 'timer-box';
+            const total = timerSeconds;
+            if (total <= 30)       box.classList.add('danger');
+            else if (total <= 60)  box.classList.add('warning');
+        }
+
+        function onTimerEnd() {
+            document.getElementById('timerBox').textContent = '⏱ 00:00';
+            document.getElementById('timerBox').className = 'timer-box danger';
+            document.getElementById('timerModal').classList.add('show');
+        }
+
+        function closeTimerModal() {
+            document.getElementById('timerModal').classList.remove('show');
+        }
+        // ──────────────────────────────────────────────────────
+
+        // Track practice time — record session start
+        const sessionStart = Date.now();
+
+        function savePracticeTime() {
+            const user = JSON.parse(localStorage.getItem('currentUser'));
+            if (!user) return;
+            if (!user.stats) user.stats = { problemsSolved: 0, totalProblems: 0, practiceTime: 0, subjects: 6 };
+            const minutesSpent = Math.floor((Date.now() - sessionStart) / 60000);
+            if (minutesSpent > 0) {
+                user.stats.practiceTime = (user.stats.practiceTime || 0) + minutesSpent;
+                localStorage.setItem('currentUser', JSON.stringify(user));
+            }
+        }
+
+        // Save time when user leaves the page
+        window.addEventListener('beforeunload', savePracticeTime);
+        // Also save every 60 seconds silently
+        setInterval(savePracticeTime, 60000);
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const params = new URLSearchParams(window.location.search);
+            const subjectId = params.get('subject');
+            currentIndex = parseInt(params.get('q') || '0');
+            for (let key in syllabus) {
+                const sub = syllabus[key].subjects.find(s => s.id === subjectId);
+                if (sub) { selectedSubject = sub; break; }
+            }
+            if (!selectedSubject) { window.location.href = 'problems.html'; return; }
+            loadProblem(currentIndex);
+            startTimer(selectedSubject.problems[currentIndex].difficulty);
+        });
+
+        function loadProblem(index) {
+            if (!selectedSubject || index < 0 || index >= selectedSubject.problems.length) return;
+            currentIndex = index;
+            const problem = selectedSubject.problems[index];
+            document.title = problem.title + ' - CampusCode';
+            document.getElementById('problemTitle').textContent = (index + 1) + '. ' + problem.title;
+            const diffClass = 'badge-' + problem.difficulty;
+            const diffLabel = problem.difficulty.charAt(0).toUpperCase() + problem.difficulty.slice(1);
+            document.getElementById('problemBadges').innerHTML = `<span class="badge ${diffClass}">${diffLabel}</span><span class="badge badge-topic">${selectedSubject.code}</span>`;
+            document.getElementById('problemDesc').innerHTML = `<p>${getProblemDescription(problem)}</p>`;
+            document.getElementById('problemExamples').innerHTML = getProblemExamples(problem);
+            document.getElementById('codeEditor').value = getTemplate(document.getElementById('langSelect').value);
+            updateLineNumbers();
+            document.getElementById('resultBox').innerHTML = 'Run your code to see results.';
+            const url = new URL(window.location);
+            url.searchParams.set('q', index);
+            window.history.replaceState({}, '', url);
+        }
+
+        function getProblemDescription(problem) {
+            const desc = problem.description || 'Write a program to solve: ' + problem.title + '.';
+            return `<strong>${problem.title}</strong><br><br>${desc}`;
+        }
+
+        function getProblemExamples(problem) {
+            // Use outputDesc if available, otherwise fall back to description
+            const outputDesc = problem.outputDesc || problem.description || null;
+            const expected = problem.expected || null;
+            const hint = problem.hint || null;
+
+            const outputDescBox = outputDesc
+                ? `<div class="example-box"><strong>Output Description:</strong><pre>${escHtml(outputDesc)}</pre></div>`
+                : '';
+
+            const expectedBox = expected
+                ? `<div class="example-box"><strong>Sample Output:</strong><pre>${escHtml(expected)}</pre></div>`
+                : '';
+
+            const hintBox = hint
+                ? `<div class="example-box"><strong>Hint:</strong><pre>${escHtml(hint)}</pre></div>`
+                : '';
+
+            const noteLines = problem.difficulty === 'easy'
+                ? '• Keep your solution simple and correct\n• Time limit: 10 seconds'
+                : problem.difficulty === 'medium'
+                ? '• Include comments in your code\n• Handle basic edge cases\n• Time limit: 10 seconds'
+                : '• Add proper comments and documentation\n• Handle all edge cases\n• Time limit: 10 seconds';
+
+            return `${outputDescBox}${expectedBox}${hintBox}<div class="example-box"><strong>Note:</strong><pre>${noteLines}</pre></div>`;
+        }
+
+        function getTemplate(lang) {
+            const t = {
+                c: '#include <stdio.h>\n\nint main() {\n    printf("Hello, World!\\n");\n    return 0;\n}',
+                python: 'print("Hello, World!")',
+                java: 'public class Solution {\n    public static void main(String[] args) {\n        System.out.println("Hello, World!");\n    }\n}',
+                php: '<?php\necho "Hello, World!";\n?>',
+                r: 'cat("Hello, World!\\n")'
+            };
+            return t[lang] || '// Write your code here';
+        }
+
+        document.getElementById('langSelect').addEventListener('change', function() {
+            document.getElementById('codeEditor').value = getTemplate(this.value);
+            updateLineNumbers();
+        });
+
+        function showResult(data) {
+            const box = document.getElementById('resultBox');
+
+            if (data.success) {
+                const output = data.stdout || '(no output)';
+                const warnings = data.stderr ? `<div style="color:#fbbf24; font-size:0.82rem; margin-top:0.5rem;"><strong>Warnings:</strong><pre style="white-space:pre-wrap;">${escHtml(data.stderr)}</pre></div>` : '';
+                box.innerHTML = `<div style="color:#4ade80; font-weight:600; margin-bottom:0.5rem;">✓ Executed Successfully</div><div style="color:#b0b0b0; font-size:0.82rem; margin-bottom:0.5rem;">Output:</div><pre style="background:#0d0d1a; padding:0.8rem; border-radius:5px; color:#e0e0e0; font-size:0.85rem; white-space:pre-wrap; border:1px solid #2a1a3d;">${escHtml(output)}</pre>${warnings}`;
+            } else if (data.type === 'compile_error') {
+                box.innerHTML = `<div style="color:#f87171; font-weight:600; margin-bottom:0.5rem;">✗ Compilation Error</div><pre style="background:#0d0d1a; padding:0.8rem; border-radius:5px; color:#f87171; font-size:0.85rem; white-space:pre-wrap; border:1px solid #3d1a1a;">${escHtml(data.stderr)}</pre>`;
+            } else if (data.type === 'runtime_error') {
+                box.innerHTML = `<div style="color:#f87171; font-weight:600; margin-bottom:0.5rem;">✗ Runtime Error</div><pre style="background:#0d0d1a; padding:0.8rem; border-radius:5px; color:#f87171; font-size:0.85rem; white-space:pre-wrap; border:1px solid #3d1a1a;">${escHtml(data.stderr)}</pre>`;
+            } else if (data.type === 'tle') {
+                box.innerHTML = `<div style="color:#fbbf24; font-weight:600;">⚠ Time Limit Exceeded (10s)</div>`;
+            } else {
+                box.innerHTML = `<div style="color:#f87171; font-weight:600; margin-bottom:0.5rem;">✗ Error</div><pre style="background:#0d0d1a; padding:0.8rem; border-radius:5px; color:#f87171; font-size:0.85rem; white-space:pre-wrap;">${escHtml(data.stderr || data.error || 'Unknown error')}</pre>`;
+            }
+        }
+
+        function escHtml(str) {
+            return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+        }
+
+        function needsInput(code, language) {
+            const patterns = {
+                c: /scanf|gets|fgets|getchar/,
+                python: /input\s*\(/,
+                javascript: /readline|prompt\s*\(/,
+                java: /Scanner|BufferedReader|System\.in/,
+                php: /readline|fgets\s*\(\s*STDIN/,
+                r: /readline|scan|readLines/
+            };
+            const pattern = patterns[language];
+            return pattern ? pattern.test(code) : false;
+        }
+
+        async function runCode() {
+            const code = document.getElementById('codeEditor').value.trim();
+            const language = document.getElementById('langSelect').value;
+            if (!code) { alert('Please write some code first!'); return; }
+
+            const hasInput = needsInput(code, language);
+            const inputSection = document.getElementById('inputSection');
+            const testInput = document.getElementById('testInput');
+
+            inputSection.style.display = hasInput ? 'block' : 'none';
+
+            if (hasInput && !testInput.value.trim()) {
+                document.getElementById('resultBox').innerHTML = '<span style="color:#fbbf24;">⚠ Your program needs input! Type your input above and click Run again.</span>';
+                return;
+            }
+
+            const input = hasInput ? testInput.value : '';
+
+            document.getElementById('runBtn').disabled = true;
+            document.getElementById('runBtn').textContent = '⟳ Running...';
+            document.getElementById('resultBox').innerHTML = '<span style="color:#fbbf24;">⟳ Running your code...</span>';
+
+            try {
+                const res = await fetch(COMPILER_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ code, language, input })
+                });
+                const data = await res.json();
+                showResult(data);
+            } catch (err) {
+                document.getElementById('resultBox').innerHTML = `<div style="color:#f87171; font-weight:600;">✗ Cannot connect to backend</div><div style="color:#b0b0b0; font-size:0.85rem; margin-top:0.5rem;">Make sure the backend server is running on port 5000.</div>`;
+            } finally {
+                document.getElementById('runBtn').disabled = false;
+                document.getElementById('runBtn').textContent = '▶ Run';
+            }
+        }
+
+        async function submitCode() {
+            const code = document.getElementById('codeEditor').value.trim();
+            const language = document.getElementById('langSelect').value;
+            if (!code) { alert('Please write some code before submitting!'); return; }
+
+            document.getElementById('submitBtn').disabled = true;
+            document.getElementById('submitBtn').textContent = 'Submitting...';
+            document.getElementById('resultBox').innerHTML = '<span style="color:#fbbf24;">⟳ Submitting...</span>';
+
+            try {
+                const res = await fetch(COMPILER_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ code, language, input: '' })
+                });
+                const data = await res.json();
+                showResult(data);
+
+                if (data.success) {
+                    const problem = selectedSubject.problems[currentIndex];
+                    const key = selectedSubject.id + '_' + problem.id;
+                    const solvedProblems = JSON.parse(localStorage.getItem('solvedProblems') || '{}');
+                    const alreadySolved = !!solvedProblems[key];
+                    solvedProblems[key] = true;
+                    localStorage.setItem('solvedProblems', JSON.stringify(solvedProblems));
+
+                    // Update problemsSolved count and success rate in user stats
+                    if (!alreadySolved) {
+                        const user = JSON.parse(localStorage.getItem('currentUser'));
+                        if (user) {
+                            if (!user.stats) user.stats = { problemsSolved: 0, totalProblems: 0, practiceTime: 0, subjects: 6 };
+                            user.stats.problemsSolved = (user.stats.problemsSolved || 0) + 1;
+                            localStorage.setItem('currentUser', JSON.stringify(user));
+                        }
+                    }
+
+                    submissions.unshift({ problem: problem.title, status: 'Accepted', time: new Date().toLocaleTimeString() });
+                    updateSubmissions();
+                }
+            } catch (err) {
+                document.getElementById('resultBox').innerHTML = `<div style="color:#f87171; font-weight:600;">✗ Cannot connect to backend</div><div style="color:#b0b0b0; font-size:0.85rem; margin-top:0.5rem;">Make sure the backend server is running on port 5000.</div>`;
+            } finally {
+                document.getElementById('submitBtn').disabled = false;
+                document.getElementById('submitBtn').textContent = 'Submit';
+            }
+        }
+
+        function updateSubmissions() {
+            document.getElementById('submissionsList').innerHTML = submissions.map(s => `
+                <div style="padding:0.5rem 0; border-bottom:1px solid #2a1a3d; font-size:0.85rem;">
+                    <span style="color:#4ade80;">✓ ${s.status}</span>
+                    <span style="color:#666; margin-left:1rem;">${s.problem}</span>
+                    <span style="color:#444; float:right;">${s.time}</span>
+                </div>`).join('');
+        }
+
+        function prevProblem() { if (currentIndex > 0) { loadProblem(currentIndex - 1); startTimer(selectedSubject.problems[currentIndex - 1].difficulty); } }
+        function nextProblem() {
+            if (currentIndex < selectedSubject.problems.length - 1) { loadProblem(currentIndex + 1); startTimer(selectedSubject.problems[currentIndex + 1].difficulty); }
+            else alert('You completed all problems in this subject!');
+        }
+
+        function switchTab(el, tabId) {
+            document.querySelectorAll('.panel-tab').forEach(t => t.classList.remove('active'));
+            el.classList.add('active');
+            ['descTab','submissionsTab'].forEach(id => document.getElementById(id).style.display = id === tabId ? 'block' : 'none');
+        }
+
+        function switchBottomTab(el, tabId) {
+            document.querySelectorAll('.bottom-tab').forEach(t => t.classList.remove('active'));
+            el.classList.add('active');
+            ['inputPanel','resultPanel'].forEach(id => document.getElementById(id).style.display = id === tabId ? 'block' : 'none');
+        }
+
+        document.getElementById('codeEditor').addEventListener('keydown', function(e) {
+            if (e.key === 'Tab') {
+                e.preventDefault();
+                const s = this.selectionStart;
+                this.value = this.value.substring(0, s) + '    ' + this.value.substring(this.selectionEnd);
+                this.selectionStart = this.selectionEnd = s + 4;
+            }
+            updateLineNumbers();
+        });
+
+        function updateLineNumbers() {
+            const code = document.getElementById('codeEditor').value;
+            const lines = code.split('\n').length;
+            const lineNumbers = document.getElementById('lineNumbers');
+            lineNumbers.innerHTML = Array.from({length: lines}, (_, i) => i + 1).join('<br>');
+        }
+
+        document.getElementById('codeEditor').addEventListener('input', updateLineNumbers);
+        document.getElementById('codeEditor').addEventListener('scroll', function() {
+            document.getElementById('lineNumbers').scrollTop = this.scrollTop;
+        });
+
+        const bottomResizer = document.getElementById('bottomResizer');
+        const bottomPanel = document.getElementById('bottomPanel');
+        let isResizingBottom = false;
+        bottomResizer.addEventListener('mousedown', () => isResizingBottom = true);
+        document.addEventListener('mousemove', e => {
+            if (!isResizingBottom) return;
+            const rightPanel = bottomPanel.parentElement;
+            const panelRect = rightPanel.getBoundingClientRect();
+            const newHeight = panelRect.bottom - e.clientY;
+            if (newHeight > 80 && newHeight < window.innerHeight * 0.7)
+                bottomPanel.style.height = newHeight + 'px';
+        });
+        document.addEventListener('mouseup', () => isResizingBottom = false);
+
+        const resizer = document.getElementById('resizer');
+        const leftPanel = document.getElementById('leftPanel');
+        let isResizing = false;
+        resizer.addEventListener('mousedown', () => isResizing = true);
+        document.addEventListener('mousemove', e => { if (isResizing && e.clientX > 250 && e.clientX < window.innerWidth - 300) leftPanel.style.width = e.clientX + 'px'; });
+        document.addEventListener('mouseup', () => isResizing = false);
+    </script>
+    <!-- Timeout Modal -->
+    <div class="timer-modal" id="timerModal">
+        <div class="timer-modal-box">
+            <h2>⏰ Time's Up!</h2>
+            <p>Your 10-minute timer has ended.<br>You can still submit your code or move to the next problem.</p>
+            <button onclick="closeTimerModal()">Continue Coding</button>
+            <button class="btn-secondary" onclick="submitCode(); closeTimerModal()">Submit Now</button>
+        </div>
+    </div>
+
+</body>
+</html>
