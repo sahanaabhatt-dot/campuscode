@@ -1,0 +1,5 @@
+node_modules
+.env
+pavana01/pavana/backend/.env
+pavana01/pavana/backend/node_modules
+pavana01/pavana/campuscode/campuscode/frontend/node_modules
