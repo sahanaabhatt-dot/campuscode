@@ -56,7 +56,7 @@
                 </div>
                 <div class="stat-card">
                     <h3 id="dashHoursPracticed">0</h3>
-                    <p>Hours Practiced</p>
+                    <p id="dashHoursLabel">Minutes Practiced</p>
                 </div>
                 <div class="stat-card">
                     <h3 id="dashSuccessRate">0%</h3>
@@ -122,9 +122,11 @@
                         <h3 id="perfRate">0%</h3>
                         <p>Success Rate</p>
                     </div>
-                    <div class="stat-card">
-                        <h3 id="perfHours">0</h3>
-                        <p>Hours Practiced</p>
+                <div style="margin-bottom:1rem;">
+                        <div style="display:flex; justify-content:space-between; margin-bottom:0.4rem;">
+                            <span style="color:#b0b0b0;">Practice Time</span>
+                            <span id="perfHours" style="color:#b0b0b0;">0 min</span>
+                        </div>
                     </div>
                     <div class="stat-card">
                         <h3 id="perfDays">0</h3>
@@ -199,6 +201,14 @@
     <script src="script.js"></script>
     <script>
 
+        function formatTime(totalMinutes) {
+            if (totalMinutes < 1) return '0 min';
+            if (totalMinutes < 60) return totalMinutes + ' min';
+            const h = Math.floor(totalMinutes / 60);
+            const m = totalMinutes % 60;
+            return m > 0 ? h + 'h ' + m + 'min' : h + 'h';
+        }
+
         const currentUser = JSON.parse(localStorage.getItem('currentUser'));
         
         if (!currentUser) {
@@ -220,10 +230,14 @@
                     problemsSolved: 0,
                     totalProblems: 0,
                     practiceTime: 0,
-                    subjects: 6 // Total subjects available
+                    subjects: 6
                 };
                 localStorage.setItem('currentUser', JSON.stringify(currentUser));
             }
+
+            // Reset practice time to 0 on dashboard load (fresh start)
+            currentUser.stats.practiceTime = 0;
+            localStorage.setItem('currentUser', JSON.stringify(currentUser));
 
             const solvedData = JSON.parse(localStorage.getItem('solvedProblems') || '{}');
             let totalSolved = 0, totalAll = 0;
@@ -242,8 +256,18 @@
 
             document.getElementById('dashProblemsSolved').textContent = totalSolved;
             document.getElementById('dashSubjects').textContent = currentUser.stats?.subjects || 6;
-            document.getElementById('dashHoursPracticed').textContent = hoursPracticed;
             document.getElementById('dashSuccessRate').textContent = successRate + '%';
+
+            // Real-time practice time display (only counts time from questions page)
+            function updatePracticeTime() {
+                const user = JSON.parse(localStorage.getItem('currentUser'));
+                const totalMinutes = user?.stats?.practiceTime || 0;
+                document.getElementById('dashHoursPracticed').textContent = formatTime(totalMinutes);
+                document.getElementById('dashHoursLabel').textContent = 'Time Practiced';
+            }
+
+            updatePracticeTime();
+            setInterval(updatePracticeTime, 10000);
 
             const semesterButtons = document.querySelectorAll('.semester-btn');
             semesterButtons.forEach((btn, index) => {
@@ -360,7 +384,7 @@
 
             document.getElementById('perfSolved').textContent = total;
             document.getElementById('perfRate').textContent = rate + '%';
-            document.getElementById('perfHours').textContent = Math.floor((user.stats?.practiceTime || 0) / 60);
+            document.getElementById('perfHours').textContent = formatTime(user.stats?.practiceTime || 0);
             document.getElementById('perfDays').textContent = daysActive;
 
             document.getElementById('perfEasy').textContent = easy + ' / ' + totalEasy + ' solved';

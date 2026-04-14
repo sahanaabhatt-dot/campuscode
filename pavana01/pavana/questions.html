@@ -219,21 +219,25 @@
         // Track practice time — record session start
         const sessionStart = Date.now();
 
+        let lastSavedMinutes = 0;
+
         function savePracticeTime() {
             const user = JSON.parse(localStorage.getItem('currentUser'));
             if (!user) return;
             if (!user.stats) user.stats = { problemsSolved: 0, totalProblems: 0, practiceTime: 0, subjects: 6 };
-            const minutesSpent = Math.floor((Date.now() - sessionStart) / 60000);
-            if (minutesSpent > 0) {
-                user.stats.practiceTime = (user.stats.practiceTime || 0) + minutesSpent;
+            const currentMinutes = Math.floor((Date.now() - sessionStart) / 60000);
+            const newMinutes = currentMinutes - lastSavedMinutes;
+            if (newMinutes > 0) {
+                user.stats.practiceTime = (user.stats.practiceTime || 0) + newMinutes;
                 localStorage.setItem('currentUser', JSON.stringify(user));
+                lastSavedMinutes = currentMinutes;
             }
         }
 
         // Save time when user leaves the page
         window.addEventListener('beforeunload', savePracticeTime);
-        // Also save every 60 seconds silently
-        setInterval(savePracticeTime, 60000);
+        // Also save every 30 seconds silently
+        setInterval(savePracticeTime, 30000);
 
         document.addEventListener('DOMContentLoaded', function() {
             const params = new URLSearchParams(window.location.search);

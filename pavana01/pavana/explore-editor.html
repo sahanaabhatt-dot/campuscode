@@ -186,10 +186,11 @@
                     <strong>Example / Hint:</strong>
                     <pre>${escHtml(q.example)}</pre>
                 </div>` : '';
+            const timeLimit = { easy: '3 min', medium: '6 min', hard: '10 min' }[q.difficulty || 'easy'] || '6 min';
             const noteHtml = `
                 <div class="example-box">
                     <strong>Note:</strong>
-                    <pre>• Time limit: 10 seconds\n• Write clean, working code\n• Question ${index + 1} of ${all.length}</pre>
+                    <pre>• Time limit: ${timeLimit}\n• Write clean, working code</pre>
                 </div>`;
             document.getElementById('problemExample').innerHTML = exampleHtml + noteHtml;
 
