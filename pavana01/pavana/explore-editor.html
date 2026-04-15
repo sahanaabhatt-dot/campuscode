@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <script src="redirect.js"></script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Solve - CampusCode</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -119,7 +120,7 @@
     </div>
 
     <script>
-        const COMPILER_URL = 'https://respectful-motivation-production-ea93.up.railway.app/api/compiler/run';
+        const COMPILER_URL = 'http://localhost:5000/api/compiler/run';
         let questionData = null;
         let currentIndex = 0;
 
@@ -186,13 +187,7 @@
                     <strong>Example / Hint:</strong>
                     <pre>${escHtml(q.example)}</pre>
                 </div>` : '';
-            const timeLimit = { easy: '3 min', medium: '6 min', hard: '10 min' }[q.difficulty || 'easy'] || '6 min';
-            const noteHtml = `
-                <div class="example-box">
-                    <strong>Note:</strong>
-                    <pre>• Time limit: ${timeLimit}\n• Write clean, working code</pre>
-                </div>`;
-            document.getElementById('problemExample').innerHTML = exampleHtml + noteHtml;
+            document.getElementById('problemExample').innerHTML = exampleHtml;
 
             document.getElementById('codeEditor').value = getTemplate(document.getElementById('langSelect').value);
             updateLineNumbers();
@@ -252,6 +247,7 @@
             document.getElementById('runBtn').textContent = '⟳ Running...';
             document.getElementById('resultBox').innerHTML = '<span style="color:#fbbf24;">⟳ Running your code...</span>';
 
+
             try {
                 const res = await fetch(COMPILER_URL, {
                     method: 'POST',
@@ -259,7 +255,8 @@
                     body: JSON.stringify({ code, language, input })
                 });
                 const data = await res.json();
-                showResult(data);
+                const q = questionData.allQuestions[currentIndex];
+                await showResult(data, q, input);
             } catch (err) {
                 document.getElementById('resultBox').innerHTML = `<div style="color:#f87171; font-weight:600;">✗ Cannot connect to backend</div><div style="color:#b0b0b0; font-size:0.85rem; margin-top:0.5rem;">Make sure the backend server is running on port 5000.</div>`;
             } finally {
@@ -268,12 +265,54 @@
             }
         }
 
-        function showResult(data) {
+        async function showResult(data, q, userInput) {
             const box = document.getElementById('resultBox');
             if (data.success) {
-                const output = data.stdout || '(no output)';
+                const rawOutput = data.stdout || '';
+                const output = rawOutput || '(no output — your code ran but printed nothing.\nMake sure you call your function and use print() to show the result.)';
                 const warnings = data.stderr ? `<div style="color:#fbbf24; font-size:0.82rem; margin-top:0.5rem;"><strong>Warnings:</strong><pre style="white-space:pre-wrap;">${escHtml(data.stderr)}</pre></div>` : '';
-                box.innerHTML = `<div style="color:#4ade80; font-weight:600; margin-bottom:0.5rem;">✓ Executed Successfully</div><pre style="background:#0d0d1a; padding:0.8rem; border-radius:5px; color:#e0e0e0; font-size:0.85rem; white-space:pre-wrap; border:1px solid #2a1a3d;">${escHtml(output)}</pre>${warnings}`;
+
+                box.innerHTML = `
+                    <div style="color:#4ade80; font-weight:600; margin-bottom:0.5rem;">✓ Executed Successfully</div>
+                    <pre style="background:#0d0d1a; padding:0.8rem; border-radius:5px; color:#e0e0e0; font-size:0.85rem; white-space:pre-wrap; border:1px solid #2a1a3d;">${escHtml(output)}</pre>
+                    ${warnings}
+                    ${rawOutput ? '<div id="verdictArea" style="margin-top:0.8rem; color:#888; font-size:0.85rem;">⟳ Checking answer...</div>' : ''}`;
+
+                if (!rawOutput) return;
+
+                let verdict;
+                try {
+                    const vRes = await fetch('http://localhost:5000/api/compiler/verdict', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            problemTitle: q.title,
+                            problemDescription: q.description,
+                            userOutput: rawOutput,
+                            userInput: userInput || ''
+                        })
+                    });
+                    verdict = await vRes.json();
+                } catch (e) {
+                    const va = document.getElementById('verdictArea');
+                    if (va) va.textContent = '';
+                    return;
+                }
+
+                // Re-render based on verdict
+                if (verdict.invalidInput) {
+                    box.innerHTML = `<div style="color:#fbbf24; font-weight:600;">⚠ Invalid Input</div><div style="color:#b0b0b0; font-size:0.85rem; margin-top:0.4rem;">${escHtml(verdict.reason)}</div>`;
+                } else {
+                    const va = document.getElementById('verdictArea');
+                    if (!va) return;
+                    if (verdict.correct) {
+                        va.innerHTML = `<div style="color:#4ade80; font-weight:700; font-size:1rem;">✓ Correct Answer</div><div style="color:#888; font-size:0.82rem; margin-top:0.3rem;">${escHtml(verdict.reason)}</div>`;
+                        trackAttempt(true);
+                    } else {
+                        va.innerHTML = `<div style="color:#f87171; font-weight:700; font-size:1rem;">✗ Wrong Answer</div><div style="color:#888; font-size:0.82rem; margin-top:0.3rem;">${escHtml(verdict.reason)}</div>`;
+                        trackAttempt(false);
+                    }
+                }
             } else if (data.type === 'compile_error') {
                 box.innerHTML = `<div style="color:#f87171; font-weight:600; margin-bottom:0.5rem;">✗ Compilation Error</div><pre style="background:#0d0d1a; padding:0.8rem; border-radius:5px; color:#f87171; font-size:0.85rem; white-space:pre-wrap; border:1px solid #3d1a1a;">${escHtml(data.stderr)}</pre>`;
             } else if (data.type === 'runtime_error') {
@@ -283,6 +322,13 @@
             } else {
                 box.innerHTML = `<div style="color:#f87171; font-weight:600; margin-bottom:0.5rem;">✗ Error</div><pre style="background:#0d0d1a; padding:0.8rem; border-radius:5px; color:#f87171; font-size:0.85rem; white-space:pre-wrap;">${escHtml(data.stderr || data.error || 'Unknown error')}</pre>`;
             }
+        }
+
+        function trackAttempt(correct) {
+            const stats = JSON.parse(localStorage.getItem('attemptStats') || '{"total":0,"correct":0}');
+            stats.total++;
+            if (correct) stats.correct++;
+            localStorage.setItem('attemptStats', JSON.stringify(stats));
         }
 
         function escHtml(str) { return String(str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }

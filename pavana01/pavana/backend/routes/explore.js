@@ -37,24 +37,31 @@ router.post('/generate', async (req, res) => {
     const { topic } = req.body;
     if (!topic || !topic.trim()) return res.status(400).json({ error: 'Topic is required' });
 
-    try {
-        const completion = await groq.chat.completions.create({
-            messages: [
-                { role: 'system', content: 'You are a precise coding question generator. Always respond with only a valid JSON array. Never include markdown or extra text.' },
-                { role: 'user', content: buildPrompt(topic) }
-            ],
-            model: 'llama-3.3-70b-versatile',
-            temperature: 0.3,
-            max_tokens: 4000
-        });
+    const models = ['llama-3.3-70b-versatile', 'llama3-70b-8192', 'mixtral-8x7b-32768'];
+    let lastErr;
 
-        const text = completion.choices[0]?.message?.content?.trim() || '';
-        const questions = parseQuestions(text, topic);
-        res.json({ questions });
-    } catch (err) {
-        console.error('Groq error:', err.message);
-        res.status(500).json({ error: err.message });
+    for (const model of models) {
+        try {
+            const completion = await groq.chat.completions.create({
+                messages: [
+                    { role: 'system', content: 'You are a precise coding question generator. Always respond with only a valid JSON array. Never include markdown or extra text.' },
+                    { role: 'user', content: buildPrompt(topic) }
+                ],
+                model,
+                temperature: 0.3,
+                max_tokens: 4000
+            });
+
+            const text = completion.choices[0]?.message?.content?.trim() || '';
+            const questions = parseQuestions(text, topic);
+            return res.json({ questions });
+        } catch (err) {
+            console.error(`Groq error (${model}):`, err.message);
+            lastErr = err;
+        }
     }
+
+    res.status(500).json({ error: lastErr?.message || 'Failed to generate questions' });
 });
 
 // Image-based generation

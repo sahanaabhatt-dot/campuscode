@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <script src="redirect.js"></script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Contact - CampusCode</title>
     <link rel="stylesheet" href="styles.css">
@@ -102,6 +103,35 @@
             document.getElementById('navRegister').style.display = 'none';
             document.getElementById('navDashboard').style.display = 'inline-block';
         }
+
+        document.querySelector('.contact-form').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const inputs = this.querySelectorAll('input, textarea');
+            const [name, email, subject, message] = [...inputs].map(i => i.value.trim());
+            const btn = this.querySelector('button[type="submit"]');
+            btn.disabled = true;
+            btn.textContent = 'Sending...';
+
+            try {
+                const res = await fetch('http://localhost:5000/api/contact', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name, email, subject, message })
+                });
+                const data = await res.json();
+                if (res.ok) {
+                    alert('Message sent successfully! We\'ll get back to you soon.');
+                    this.reset();
+                } else {
+                    alert(data.message || 'Failed to send message.');
+                }
+            } catch (err) {
+                alert('Cannot connect to server. Please try again later.');
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Send Message';
+            }
+        });
     </script>
 </body>
 </html>

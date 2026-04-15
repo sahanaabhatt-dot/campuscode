@@ -216,30 +216,45 @@
         }
         // ──────────────────────────────────────────────────────
 
-        // Track practice time — record session start
-        const sessionStart = Date.now();
+        // Track practice time — only count active coding time
+        let activeSeconds = 0;
+        let lastActivityTime = null;
+        const IDLE_THRESHOLD = 30000;
 
-        let lastSavedMinutes = 0;
+        function onUserActivity() {
+            const now = Date.now();
+            if (lastActivityTime) {
+                const gap = now - lastActivityTime;
+                if (gap < IDLE_THRESHOLD) activeSeconds += gap / 1000;
+            }
+            lastActivityTime = now;
+        }
 
         function savePracticeTime() {
             const user = JSON.parse(localStorage.getItem('currentUser'));
             if (!user) return;
-            if (!user.stats) user.stats = { problemsSolved: 0, totalProblems: 0, practiceTime: 0, subjects: 6 };
-            const currentMinutes = Math.floor((Date.now() - sessionStart) / 60000);
-            const newMinutes = currentMinutes - lastSavedMinutes;
+            if (!user.stats) user.stats = { problemsSolved: 0, practiceTime: 0, registeredDate: new Date().toISOString() };
+            const newMinutes = Math.floor(activeSeconds / 60);
             if (newMinutes > 0) {
                 user.stats.practiceTime = (user.stats.practiceTime || 0) + newMinutes;
                 localStorage.setItem('currentUser', JSON.stringify(user));
-                lastSavedMinutes = currentMinutes;
+                activeSeconds -= newMinutes * 60;
             }
         }
 
-        // Save time when user leaves the page
         window.addEventListener('beforeunload', savePracticeTime);
-        // Also save every 30 seconds silently
         setInterval(savePracticeTime, 30000);
 
         document.addEventListener('DOMContentLoaded', function() {
+            const editor = document.getElementById('codeEditor');
+            if (editor) {
+                editor.addEventListener('keydown', onUserActivity);
+                editor.addEventListener('click', onUserActivity);
+                editor.addEventListener('input', onUserActivity);
+            }
+            document.getElementById('runBtn')?.addEventListener('click', onUserActivity);
+            document.getElementById('submitBtn')?.addEventListener('click', onUserActivity);
+
             const params = new URLSearchParams(window.location.search);
             const subjectId = params.get('subject');
             currentIndex = parseInt(params.get('q') || '0');
@@ -294,13 +309,7 @@
                 ? `<div class="example-box"><strong>Hint:</strong><pre>${escHtml(hint)}</pre></div>`
                 : '';
 
-            const noteLines = problem.difficulty === 'easy'
-                ? '• Keep your solution simple and correct\n• Time limit: 10 seconds'
-                : problem.difficulty === 'medium'
-                ? '• Include comments in your code\n• Handle basic edge cases\n• Time limit: 10 seconds'
-                : '• Add proper comments and documentation\n• Handle all edge cases\n• Time limit: 10 seconds';
-
-            return `${outputDescBox}${expectedBox}${hintBox}<div class="example-box"><strong>Note:</strong><pre>${noteLines}</pre></div>`;
+            return `${outputDescBox}${expectedBox}${hintBox}`;
         }
 
         function getTemplate(lang) {
@@ -319,13 +328,69 @@
             updateLineNumbers();
         });
 
-        function showResult(data) {
+        async function showResult(data, problem, userInput) {
             const box = document.getElementById('resultBox');
 
             if (data.success) {
-                const output = data.stdout || '(no output)';
+                const rawOutput = data.stdout || '';
+                const output = rawOutput || '(no output — your code ran but printed nothing.\nMake sure you call your function and use print() to show the result.)';
                 const warnings = data.stderr ? `<div style="color:#fbbf24; font-size:0.82rem; margin-top:0.5rem;"><strong>Warnings:</strong><pre style="white-space:pre-wrap;">${escHtml(data.stderr)}</pre></div>` : '';
-                box.innerHTML = `<div style="color:#4ade80; font-weight:600; margin-bottom:0.5rem;">✓ Executed Successfully</div><div style="color:#b0b0b0; font-size:0.82rem; margin-bottom:0.5rem;">Output:</div><pre style="background:#0d0d1a; padding:0.8rem; border-radius:5px; color:#e0e0e0; font-size:0.85rem; white-space:pre-wrap; border:1px solid #2a1a3d;">${escHtml(output)}</pre>${warnings}`;
+
+                box.innerHTML = `
+                    <div style="color:#4ade80; font-weight:600; margin-bottom:0.5rem;">✓ Executed Successfully</div>
+                    <div style="color:#b0b0b0; font-size:0.82rem; margin-bottom:0.5rem;">Output:</div>
+                    <pre style="background:#0d0d1a; padding:0.8rem; border-radius:5px; color:#e0e0e0; font-size:0.85rem; white-space:pre-wrap; border:1px solid #2a1a3d;">${escHtml(output)}</pre>
+                    ${warnings}
+                    ${rawOutput ? '<div id="verdictArea" style="margin-top:0.8rem; color:#888; font-size:0.85rem;">⟳ Checking answer...</div>' : ''}`;
+
+                if (!rawOutput) return;
+
+                let verdict;
+                try {
+                    const vRes = await fetch('http://localhost:5000/api/compiler/verdict', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            problemTitle: problem.title,
+                            problemDescription: problem.description || problem.title,
+                            userOutput: rawOutput,
+                            userInput: userInput || ''
+                        })
+                    });
+                    verdict = await vRes.json();
+                } catch (e) {
+                    const va = document.getElementById('verdictArea');
+                    if (va) va.textContent = '';
+                    return;
+                }
+
+                if (verdict.invalidInput) {
+                    box.innerHTML = `<div style="color:#fbbf24; font-weight:600;">⚠ Invalid Input</div><div style="color:#b0b0b0; font-size:0.85rem; margin-top:0.4rem;">${escHtml(verdict.reason)}</div>`;
+                } else {
+                    const va = document.getElementById('verdictArea');
+                    if (!va) return;
+                    if (verdict.correct) {
+                        va.innerHTML = `<div style="color:#4ade80; font-weight:700; font-size:1rem;">✓ Correct Answer</div><div style="color:#888; font-size:0.82rem; margin-top:0.3rem;">${escHtml(verdict.reason)}</div>`;
+                        // Mark as solved
+                        const key = selectedSubject.id + '_' + problem.id;
+                        const solvedProblems = JSON.parse(localStorage.getItem('solvedProblems') || '{}');
+                        if (!solvedProblems[key]) {
+                            solvedProblems[key] = true;
+                            localStorage.setItem('solvedProblems', JSON.stringify(solvedProblems));
+                            const user = JSON.parse(localStorage.getItem('currentUser'));
+                            if (user) {
+                                if (!user.stats) user.stats = { problemsSolved: 0, practiceTime: 0, registeredDate: new Date().toISOString() };
+                                user.stats.problemsSolved = Object.keys(solvedProblems).length;
+                                localStorage.setItem('currentUser', JSON.stringify(user));
+                            }
+                        }
+                        trackAttempt(true);
+                    } else {
+                        va.innerHTML = `<div style="color:#f87171; font-weight:700; font-size:1rem;">✗ Wrong Answer</div><div style="color:#888; font-size:0.82rem; margin-top:0.3rem;">${escHtml(verdict.reason)}</div>`;
+                        trackAttempt(false);
+                    }
+                }
+
             } else if (data.type === 'compile_error') {
                 box.innerHTML = `<div style="color:#f87171; font-weight:600; margin-bottom:0.5rem;">✗ Compilation Error</div><pre style="background:#0d0d1a; padding:0.8rem; border-radius:5px; color:#f87171; font-size:0.85rem; white-space:pre-wrap; border:1px solid #3d1a1a;">${escHtml(data.stderr)}</pre>`;
             } else if (data.type === 'runtime_error') {
@@ -335,6 +400,13 @@
             } else {
                 box.innerHTML = `<div style="color:#f87171; font-weight:600; margin-bottom:0.5rem;">✗ Error</div><pre style="background:#0d0d1a; padding:0.8rem; border-radius:5px; color:#f87171; font-size:0.85rem; white-space:pre-wrap;">${escHtml(data.stderr || data.error || 'Unknown error')}</pre>`;
             }
+        }
+
+        function trackAttempt(correct) {
+            const stats = JSON.parse(localStorage.getItem('attemptStats') || '{"total":0,"correct":0}');
+            stats.total++;
+            if (correct) stats.correct++;
+            localStorage.setItem('attemptStats', JSON.stringify(stats));
         }
 
         function escHtml(str) {
@@ -359,18 +431,28 @@
             const language = document.getElementById('langSelect').value;
             if (!code) { alert('Please write some code first!'); return; }
 
+            const problem = selectedSubject.problems[currentIndex];
+            const problemInput = problem.input || null;
+
             const hasInput = needsInput(code, language);
             const inputSection = document.getElementById('inputSection');
             const testInput = document.getElementById('testInput');
 
-            inputSection.style.display = hasInput ? 'block' : 'none';
-
-            if (hasInput && !testInput.value.trim()) {
-                document.getElementById('resultBox').innerHTML = '<span style="color:#fbbf24;">⚠ Your program needs input! Type your input above and click Run again.</span>';
-                return;
+            // If problem has a predefined input, use it silently
+            let input = '';
+            if (problemInput) {
+                input = problemInput;
+                inputSection.style.display = 'none';
+            } else if (hasInput) {
+                inputSection.style.display = 'block';
+                if (!testInput.value.trim()) {
+                    document.getElementById('resultBox').innerHTML = '<span style="color:#fbbf24;">⚠ Your program needs input! Type your input above and click Run again.</span>';
+                    return;
+                }
+                input = testInput.value;
+            } else {
+                inputSection.style.display = 'none';
             }
-
-            const input = hasInput ? testInput.value : '';
 
             document.getElementById('runBtn').disabled = true;
             document.getElementById('runBtn').textContent = '⟳ Running...';
@@ -383,7 +465,8 @@
                     body: JSON.stringify({ code, language, input })
                 });
                 const data = await res.json();
-                showResult(data);
+                const problem = selectedSubject.problems[currentIndex];
+                showResult(data, problem, input);
             } catch (err) {
                 document.getElementById('resultBox').innerHTML = `<div style="color:#f87171; font-weight:600;">✗ Cannot connect to backend</div><div style="color:#b0b0b0; font-size:0.85rem; margin-top:0.5rem;">Make sure the backend server is running on port 5000.</div>`;
             } finally {
@@ -397,6 +480,8 @@
             const language = document.getElementById('langSelect').value;
             if (!code) { alert('Please write some code before submitting!'); return; }
 
+            const problem = selectedSubject.problems[currentIndex];
+
             document.getElementById('submitBtn').disabled = true;
             document.getElementById('submitBtn').textContent = 'Submitting...';
             document.getElementById('resultBox').innerHTML = '<span style="color:#fbbf24;">⟳ Submitting...</span>';
@@ -405,25 +490,23 @@
                 const res = await fetch(COMPILER_URL, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ code, language, input: '' })
+                    body: JSON.stringify({ code, language, input: problem.input || '' })
                 });
                 const data = await res.json();
-                showResult(data);
+                await showResult(data, problem, problem.input || '');
 
                 if (data.success) {
-                    const problem = selectedSubject.problems[currentIndex];
                     const key = selectedSubject.id + '_' + problem.id;
                     const solvedProblems = JSON.parse(localStorage.getItem('solvedProblems') || '{}');
                     const alreadySolved = !!solvedProblems[key];
                     solvedProblems[key] = true;
                     localStorage.setItem('solvedProblems', JSON.stringify(solvedProblems));
 
-                    // Update problemsSolved count and success rate in user stats
                     if (!alreadySolved) {
                         const user = JSON.parse(localStorage.getItem('currentUser'));
                         if (user) {
-                            if (!user.stats) user.stats = { problemsSolved: 0, totalProblems: 0, practiceTime: 0, subjects: 6 };
-                            user.stats.problemsSolved = (user.stats.problemsSolved || 0) + 1;
+                            if (!user.stats) user.stats = { problemsSolved: 0, practiceTime: 0, registeredDate: new Date().toISOString() };
+                            user.stats.problemsSolved = Object.keys(solvedProblems).length;
                             localStorage.setItem('currentUser', JSON.stringify(user));
                         }
                     }

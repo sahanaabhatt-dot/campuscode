@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <script src="redirect.js"></script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Explore - CampusCode</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -310,8 +311,8 @@
     </div>
 
     <script>
-        const TEXT_API  = 'https://respectful-motivation-production-ea93.up.railway.app/api/explore/generate';
-        const IMAGE_API = 'https://respectful-motivation-production-ea93.up.railway.app/api/explore/generate-from-image';
+        const TEXT_API  = 'http://localhost:5000/api/explore/generate';
+        const IMAGE_API = 'http://localhost:5000/api/explore/generate-from-image';
 
         let currentTopic     = '';
         let currentQuestions = [];

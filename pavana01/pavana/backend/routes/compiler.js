@@ -128,4 +128,82 @@ router.post('/run', async (req, res) => {
     }
 });
 
+// AI input validator — check if input is valid for the problem before running
+router.post('/validate-input', async (req, res) => {
+    const { problemTitle, problemDescription, userInput } = req.body;
+    if (!problemTitle || !userInput) return res.json({ valid: true });
+
+    try {
+        const Groq = require('groq-sdk');
+        const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
+
+        const prompt = `Problem: "${problemTitle}"
+Description: "${problemDescription}"
+User input: "${userInput}"
+
+Is this input valid for this problem based on its description? Answer ONLY with JSON:
+{"valid": true} or {"valid": false, "reason": "short message telling what valid input looks like"}`;
+
+        const completion = await groq.chat.completions.create({
+            messages: [{ role: 'user', content: prompt }],
+            model: 'llama-3.3-70b-versatile',
+            temperature: 0.1,
+            max_tokens: 100
+        });
+
+        const text = completion.choices[0]?.message?.content?.trim() || '';
+        const match = text.match(/\{[\s\S]*\}/);
+        if (!match) return res.json({ valid: true });
+        res.json(JSON.parse(match[0]));
+    } catch (err) {
+        res.json({ valid: true }); // fail open
+    }
+});
+
+
+router.post('/verdict', async (req, res) => {
+    const { problemTitle, problemDescription, userOutput, userInput } = req.body;
+    if (!problemTitle || !userOutput) return res.status(400).json({ error: 'Missing fields' });
+
+    try {
+        const Groq = require('groq-sdk');
+        const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
+
+        const prompt = `You are a coding judge for a student programming platform.
+
+Problem title: "${problemTitle}"
+Problem description: "${problemDescription}"
+Input given to the program: "${userInput || '(none)'}"
+Program output: "${userOutput.trim()}"
+
+Your task:
+1. Understand what the problem is asking.
+2. If input was given, mentally compute what the CORRECT output should be for that exact input.
+3. Compare the student's output to the correct output logically (ignore minor formatting like extra spaces, quote styles, or newlines).
+4. If the input is completely irrelevant to the problem (e.g. typing random words for a math problem), mark it as invalid.
+
+Respond with ONLY a valid JSON object — no extra text:
+{"correct": true, "reason": "brief explanation"}
+{"correct": false, "reason": "brief explanation of what is wrong"}
+{"correct": false, "invalidInput": true, "reason": "brief explanation of what valid input looks like"}`;
+
+        const completion = await groq.chat.completions.create({
+            messages: [{ role: 'user', content: prompt }],
+            model: 'llama-3.3-70b-versatile',
+            temperature: 0.1,
+            max_tokens: 200
+        });
+
+        const text = completion.choices[0]?.message?.content?.trim() || '';
+        const match = text.match(/\{[\s\S]*\}/);
+        if (!match) return res.status(500).json({ error: 'Could not parse verdict' });
+
+        const verdict = JSON.parse(match[0]);
+        res.json(verdict);
+    } catch (err) {
+        console.error('Verdict error:', err.message);
+        res.status(500).json({ error: err.message });
+    }
+});
+
 module.exports = router;
