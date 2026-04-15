@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <script src="redirect.js"></script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard - CampusCode</title>
     <link rel="stylesheet" href="styles.css">
@@ -230,14 +231,19 @@
                     problemsSolved: 0,
                     totalProblems: 0,
                     practiceTime: 0,
-                    subjects: 6
+                    subjects: 6,
+                    registeredDate: new Date().toISOString()
                 };
+                localStorage.setItem('currentUser', JSON.stringify(currentUser));
+            }
+            // Ensure registeredDate exists for older accounts
+            if (!currentUser.stats.registeredDate) {
+                currentUser.stats.registeredDate = new Date().toISOString();
                 localStorage.setItem('currentUser', JSON.stringify(currentUser));
             }
 
             // Reset practice time to 0 on dashboard load (fresh start)
-            currentUser.stats.practiceTime = 0;
-            localStorage.setItem('currentUser', JSON.stringify(currentUser));
+            // currentUser.stats.practiceTime = 0; // REMOVED - was wiping practice time
 
             const solvedData = JSON.parse(localStorage.getItem('solvedProblems') || '{}');
             let totalSolved = 0, totalAll = 0;
@@ -250,7 +256,8 @@
                 });
             }
             const totalAttempted = Object.keys(solvedData).length;
-            const successRate = totalAttempted > 0 ? Math.round((totalSolved / totalAttempted) * 100) : 0;
+            const attemptStats = JSON.parse(localStorage.getItem('attemptStats') || '{"total":0,"correct":0}');
+            const successRate = attemptStats.total > 0 ? Math.round((attemptStats.correct / attemptStats.total) * 100) : 0;
 
             const hoursPracticed = Math.floor((currentUser.stats?.practiceTime || 0) / 60);
 
@@ -380,7 +387,7 @@
             const totalAll = totalEasy + totalMedium + totalHard;
             const rate = totalAll > 0 ? Math.round((total / totalAll) * 100) : 0;
             const registeredDate = new Date(user.stats?.registeredDate || new Date());
-            const daysActive = Math.floor((new Date() - registeredDate) / (1000 * 60 * 60 * 24));
+            const daysActive = Math.max(1, Math.floor((new Date() - registeredDate) / (1000 * 60 * 60 * 24)) + 1);
 
             document.getElementById('perfSolved').textContent = total;
             document.getElementById('perfRate').textContent = rate + '%';

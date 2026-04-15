@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <script src="redirect.js"></script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Profile - CampusCode</title>
     <link rel="stylesheet" href="styles.css">
@@ -145,6 +146,7 @@
     </div>
 
     <script src="script.js"></script>
+    <script src="data/syllabus.js"></script>
     <script>
         const currentUser = JSON.parse(localStorage.getItem('currentUser'));
         
@@ -180,49 +182,78 @@
                     problemsSolved: 0,
                     totalProblems: 0,
                     practiceTime: 0,
-                    registeredDate: currentUser.registeredDate || new Date().toISOString()
+                    registeredDate: new Date().toISOString()
                 };
             }
-            
+            if (!currentUser.stats.registeredDate) {
+                currentUser.stats.registeredDate = new Date().toISOString();
+                localStorage.setItem('currentUser', JSON.stringify(currentUser));
+            }
+
+            const solvedData = JSON.parse(localStorage.getItem('solvedProblems') || '{}');
+            const totalSolved = Object.keys(solvedData).length;
+
             const registeredDate = new Date(currentUser.stats.registeredDate);
             const today = new Date();
-            const daysActive = Math.floor((today - registeredDate) / (1000 * 60 * 60 * 24));
-            
-            const successRate = currentUser.stats.totalProblems > 0 
-                ? Math.round((currentUser.stats.problemsSolved / currentUser.stats.totalProblems) * 100)
-                : 0;
-            
-            const hoursPracticed = Math.floor(currentUser.stats.practiceTime / 60);
-            
-            document.getElementById('problemsSolved').textContent = currentUser.stats.problemsSolved;
-            document.getElementById('hoursPracticed').textContent = hoursPracticed;
+            const daysActive = Math.max(1, Math.floor((today - registeredDate) / (1000 * 60 * 60 * 24)) + 1);
+
+            const practiceMinutes = currentUser.stats.practiceTime || 0;
+            const hoursDisplay = practiceMinutes < 60
+                ? practiceMinutes + ' min'
+                : Math.floor(practiceMinutes / 60) + 'h ' + (practiceMinutes % 60) + 'min';
+
+            // success rate: solved out of total syllabus problems
+            let totalAll = 0;
+            if (typeof syllabus !== 'undefined') {
+                for (let semKey in syllabus) {
+                    syllabus[semKey].subjects.forEach(s => { totalAll += s.problems.length; });
+                }
+            }
+            const successRate = totalAll > 0 ? Math.round((totalSolved / totalAll) * 100) : 0;
+            document.getElementById('hoursPracticed').textContent = hoursDisplay;
             document.getElementById('successRate').textContent = successRate + '%';
             document.getElementById('daysActive').textContent = daysActive;
         }
         
-        document.querySelector('.profile-form').addEventListener('submit', function(e) {
+        document.querySelector('.profile-form').addEventListener('submit', async function(e) {
             e.preventDefault();
             
             const updatedName = document.querySelector('input[type="text"]').value;
             const updatedEmail = document.querySelector('input[type="email"]').value;
             const updatedPhone = document.querySelector('input[type="tel"]').value;
             const updatedSemester = document.querySelector('select').value;
-            
+            const btn = this.querySelector('button[type="submit"]');
+            btn.disabled = true;
+            btn.textContent = 'Saving...';
+
+            // Sync with backend
+            const token = localStorage.getItem('authToken');
+            if (token) {
+                try {
+                    const res = await fetch('https://campuscode-production.up.railway.app/api/users/profile', {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+                        body: JSON.stringify({ name: updatedName, email: updatedEmail, semester: parseInt(updatedSemester) })
+                    });
+                    const data = await res.json();
+                    if (res.ok && data.user) {
+                        // Update localStorage with server response
+                        const user = JSON.parse(localStorage.getItem('currentUser'));
+                        Object.assign(user, data.user, { phone: updatedPhone });
+                        localStorage.setItem('currentUser', JSON.stringify(user));
+                    }
+                } catch (e) { /* fail gracefully, still save locally */ }
+            }
+
+            // Always update localStorage
             currentUser.name = updatedName;
             currentUser.email = updatedEmail;
             currentUser.phone = updatedPhone;
             currentUser.semester = parseInt(updatedSemester);
-            
-            const registeredUsers = JSON.parse(localStorage.getItem('registeredUsers') || '[]');
-            const userIndex = registeredUsers.findIndex(u => u.uucms === currentUser.uucms);
-            
-            if (userIndex !== -1) {
-                registeredUsers[userIndex] = currentUser;
-                localStorage.setItem('registeredUsers', JSON.stringify(registeredUsers));
-            }
-            
             localStorage.setItem('currentUser', JSON.stringify(currentUser));
-            
+
+            btn.disabled = false;
+            btn.textContent = 'Save Changes';
             alert('Profile updated successfully!');
             location.reload();
         });

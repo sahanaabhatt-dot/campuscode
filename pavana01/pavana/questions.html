@@ -173,7 +173,7 @@
         let selectedSubject = null;
         let currentIndex = 0;
         let submissions = [];
-        const COMPILER_URL = 'http://localhost:5000/api/compiler/run';
+        const COMPILER_URL = 'https://campuscode-production.up.railway.app/api/compiler/run';
 
         // ── Timer ──────────────────────────────────────────────
         const TIMER_LIMITS = { easy: 3 * 60, medium: 6 * 60, hard: 10 * 60 };
@@ -353,7 +353,7 @@
 
                 let verdict;
                 try {
-                    const vRes = await fetch('http://localhost:5000/api/compiler/verdict', {
+                    const vRes = await fetch('https://campuscode-production.up.railway.app/api/compiler/verdict', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({

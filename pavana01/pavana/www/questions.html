@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <script src="redirect.js"></script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Problem - CampusCode</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -172,7 +173,7 @@
         let selectedSubject = null;
         let currentIndex = 0;
         let submissions = [];
-        const COMPILER_URL = 'https://respectful-motivation-production-ea93.up.railway.app/api/compiler/run';
+        const COMPILER_URL = 'https://campuscode-production.up.railway.app/api/compiler/run';
 
         // ── Timer ──────────────────────────────────────────────
         const TIMER_LIMITS = { easy: 3 * 60, medium: 6 * 60, hard: 10 * 60 };
@@ -219,13 +220,15 @@
         // Track practice time — only count active coding time
         let activeSeconds = 0;
         let lastActivityTime = null;
-        const IDLE_THRESHOLD = 30000;
+        const IDLE_THRESHOLD = 30000; // 30 seconds idle = stop counting
 
         function onUserActivity() {
             const now = Date.now();
             if (lastActivityTime) {
                 const gap = now - lastActivityTime;
-                if (gap < IDLE_THRESHOLD) activeSeconds += gap / 1000;
+                if (gap < IDLE_THRESHOLD) {
+                    activeSeconds += gap / 1000;
+                }
             }
             lastActivityTime = now;
         }
@@ -238,13 +241,11 @@
             if (newMinutes > 0) {
                 user.stats.practiceTime = (user.stats.practiceTime || 0) + newMinutes;
                 localStorage.setItem('currentUser', JSON.stringify(user));
-                activeSeconds -= newMinutes * 60;
+                activeSeconds -= newMinutes * 60; // keep remainder seconds
             }
         }
 
-        window.addEventListener('beforeunload', savePracticeTime);
-        setInterval(savePracticeTime, 30000);
-
+        // Track activity on code editor interactions
         document.addEventListener('DOMContentLoaded', function() {
             const editor = document.getElementById('codeEditor');
             if (editor) {
@@ -254,7 +255,12 @@
             }
             document.getElementById('runBtn')?.addEventListener('click', onUserActivity);
             document.getElementById('submitBtn')?.addEventListener('click', onUserActivity);
+        });
 
+        window.addEventListener('beforeunload', savePracticeTime);
+        setInterval(savePracticeTime, 30000);
+
+        document.addEventListener('DOMContentLoaded', function() {
             const params = new URLSearchParams(window.location.search);
             const subjectId = params.get('subject');
             currentIndex = parseInt(params.get('q') || '0');
@@ -347,7 +353,7 @@
 
                 let verdict;
                 try {
-                    const vRes = await fetch('http://localhost:5000/api/compiler/verdict', {
+                    const vRes = await fetch('https://campuscode-production.up.railway.app/api/compiler/verdict', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({
@@ -377,6 +383,7 @@
                         if (!solvedProblems[key]) {
                             solvedProblems[key] = true;
                             localStorage.setItem('solvedProblems', JSON.stringify(solvedProblems));
+                            // Update stats
                             const user = JSON.parse(localStorage.getItem('currentUser'));
                             if (user) {
                                 if (!user.stats) user.stats = { problemsSolved: 0, practiceTime: 0, registeredDate: new Date().toISOString() };
@@ -457,6 +464,7 @@
             document.getElementById('runBtn').disabled = true;
             document.getElementById('runBtn').textContent = '⟳ Running...';
             document.getElementById('resultBox').innerHTML = '<span style="color:#fbbf24;">⟳ Running your code...</span>';
+
 
             try {
                 const res = await fetch(COMPILER_URL, {
