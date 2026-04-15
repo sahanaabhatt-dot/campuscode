@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Solve - CampusCode</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Righteous&display=swap" rel="stylesheet">
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { background: #0f0a1a; color: #e0e0e0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; height: 100vh; display: flex; flex-direction: column; }
+        .top-bar { background: #1a0a2e; border-bottom: 1px solid #2a1a3d; padding: 0.5rem 1rem; display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-shrink: 0; }
+        .top-bar-left { display: flex; align-items: center; gap: 1rem; }
+        .top-bar-logo { font-family: 'Righteous', sans-serif; color: #e91e63; font-size: 1.1rem; text-decoration: none; display: flex; align-items: center; gap: 6px; }
+        .nav-arrows button { background: none; border: none; color: #b0b0b0; cursor: pointer; padding: 0.3rem 0.5rem; font-size: 1.2rem; border-radius: 4px; }
+        .nav-arrows button:hover { background: #2a1a3d; color: #fff; }
+        .run-btn { background: #2a1a3d; border: 1px solid #3d2a52; color: #4ade80; padding: 0.35rem 1rem; border-radius: 5px; cursor: pointer; font-size: 0.85rem; transition: all 0.2s; }
+        .run-btn:hover { background: #3d2a52; }
+        .run-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        .back-btn { background: none; border: 1px solid #3d2a52; color: #b0b0b0; padding: 0.35rem 0.9rem; border-radius: 5px; cursor: pointer; font-size: 0.82rem; text-decoration: none; transition: all 0.2s; }
+        .back-btn:hover { border-color: #e91e63; color: #e91e63; }
+        .main-layout { display: flex; flex: 1; overflow: hidden; }
+        .left-panel { width: 40%; min-width: 280px; border-right: 1px solid #2a1a3d; display: flex; flex-direction: column; overflow: hidden; }
+        .panel-content { flex: 1; overflow-y: auto; padding: 1.5rem; }
+        .problem-title { font-size: 1.15rem; font-weight: 700; color: #fff; margin-bottom: 0.8rem; line-height: 1.4; }
+        .problem-badges { display: flex; gap: 0.5rem; margin-bottom: 1.2rem; flex-wrap: wrap; }
+        .badge { padding: 0.2rem 0.7rem; border-radius: 12px; font-size: 0.78rem; font-weight: 600; }
+        .badge-easy { background: rgba(74,222,128,0.15); color: #4ade80; }
+        .badge-medium { background: rgba(251,191,36,0.15); color: #fbbf24; }
+        .badge-hard { background: rgba(248,113,113,0.15); color: #f87171; }
+        .badge-topic { background: #2a1a3d; color: #b0b0b0; }
+        .problem-desc { color: #c0c0c0; line-height: 1.7; font-size: 0.92rem; margin-bottom: 1.2rem; }
+        .example-box { background: #1a0a2e; border: 1px solid #2a1a3d; border-radius: 8px; padding: 1rem; margin-bottom: 1rem; font-size: 0.88rem; }
+        .example-box strong { color: #fff; display: block; margin-bottom: 0.5rem; }
+        .example-box pre { color: #c0c0c0; white-space: pre-wrap; font-family: 'Courier New', monospace; }
+        .right-panel { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+        .editor-header { background: #150a25; border-bottom: 1px solid #2a1a3d; padding: 0.5rem 1rem; display: flex; align-items: center; gap: 1rem; flex-shrink: 0; }
+        .lang-select { background: #2a1a3d; border: 1px solid #3d2a52; color: #e0e0e0; padding: 0.3rem 0.7rem; border-radius: 5px; font-size: 0.85rem; cursor: pointer; }
+        .editor-wrapper { flex: 1; display: flex; overflow: hidden; background: #0d0d1a; }
+        .line-numbers { background: #0d0d1a; color: #444; font-family: 'Courier New', monospace; font-size: 0.9rem; line-height: 1.6; padding: 1rem 0.5rem 1rem 1rem; text-align: right; user-select: none; min-width: 45px; border-right: 1px solid #1a1a2e; overflow: hidden; }
+        .code-area { flex: 1; background: #0d0d1a; color: #e0e0e0; border: none; outline: none; padding: 1rem 1rem 1rem 0.8rem; font-family: 'Courier New', monospace; font-size: 0.9rem; resize: none; line-height: 1.6; tab-size: 4; }
+        .bottom-panel { border-top: 1px solid #2a1a3d; background: #150a25; flex-shrink: 0; height: 200px; display: flex; flex-direction: column; }
+        .bottom-resize-handle { height: 5px; background: #2a1a3d; cursor: ns-resize; flex-shrink: 0; transition: background 0.2s; }
+        .bottom-resize-handle:hover { background: #e91e63; }
+        .bottom-tabs { display: flex; border-bottom: 1px solid #2a1a3d; }
+        .bottom-tab { padding: 0.5rem 1rem; font-size: 0.83rem; color: #b0b0b0; cursor: pointer; border-bottom: 2px solid transparent; }
+        .bottom-tab.active { color: #fff; border-bottom-color: #e91e63; }
+        .testcase-content { padding: 0.8rem 1rem; overflow-y: auto; flex: 1; }
+        .testcase-input { background: #1a0a2e; border: 1px solid #2a1a3d; border-radius: 5px; padding: 0.5rem 0.8rem; color: #e0e0e0; font-family: monospace; font-size: 0.85rem; width: 100%; margin-top: 0.3rem; }
+        .result-box { padding: 0.8rem 1rem; font-size: 0.88rem; overflow-y: auto; }
+        .resizer { width: 4px; background: #2a1a3d; cursor: col-resize; }
+        .resizer:hover { background: #e91e63; }
+        .ai-badge { background: linear-gradient(135deg, rgba(233,30,99,0.2), rgba(156,39,176,0.2)); border: 1px solid rgba(233,30,99,0.3); color: #e91e63; padding: 0.15rem 0.6rem; border-radius: 10px; font-size: 0.72rem; font-weight: 600; }
+    </style>
+</head>
+<body>
+    <div class="top-bar">
+        <div class="top-bar-left">
+            <a href="explore.html" class="top-bar-logo">
+                <img src="logo.svg" alt="CampusCode" style="height:30px;">
+                <span>CampusCode</span>
+            </a>
+            <div class="nav-arrows">
+                <button onclick="prevQuestion()" title="Previous">&#8249;</button>
+                <button onclick="nextQuestion()" title="Next">&#8250;</button>
+            </div>
+            <span class="ai-badge">✨ AI Generated</span>
+        </div>
+        <div style="display:flex; align-items:center; gap:0.8rem;">
+            <div id="timerBox" style="background:#2a1a3d; border:1px solid #3d2a52; border-radius:6px; padding:0.3rem 0.8rem; font-size:0.9rem; font-weight:600; color:#e0e0e0; min-width:80px; text-align:center;">--:--</div>
+            <button class="run-btn" id="runBtn" onclick="runCode()">▶ Run</button>
+        </div>
+        <div style="display:flex; align-items:center; gap:0.8rem;">
+            <a href="explore.html" class="back-btn">← Back to Explore</a>
+        </div>
+    </div>
+
+    <div class="main-layout">
+        <div class="left-panel" id="leftPanel">
+            <div class="panel-content">
+                <div class="problem-title" id="problemTitle">Loading...</div>
+                <div class="problem-badges" id="problemBadges"></div>
+                <div class="problem-desc" id="problemDesc"></div>
+                <div id="problemExample"></div>
+            </div>
+        </div>
+
+        <div class="resizer" id="resizer"></div>
+
+        <div class="right-panel">
+            <div class="editor-header">
+                <select class="lang-select" id="langSelect">
+                    <option value="c">C</option>
+                    <option value="python" selected>Python</option>
+                    <option value="java">Java</option>
+                    <option value="php">PHP</option>
+                    <option value="r">R</option>
+                </select>
+                <span style="color:#666; font-size:0.8rem;">Auto</span>
+            </div>
+            <div class="editor-wrapper">
+                <div class="line-numbers" id="lineNumbers">1</div>
+                <textarea class="code-area" id="codeEditor" spellcheck="false"></textarea>
+            </div>
+            <div class="bottom-resize-handle" id="bottomResizer"></div>
+            <div class="bottom-panel" id="bottomPanel">
+                <div class="bottom-tabs">
+                    <div class="bottom-tab active">Output</div>
+                </div>
+                <div class="testcase-content" id="resultPanel">
+                    <div id="inputSection" style="display:none; margin-bottom:0.5rem;">
+                        <div style="color:#fbbf24; font-size:0.8rem; margin-bottom:0.4rem;">⚠ Your program needs input:</div>
+                        <input class="testcase-input" id="testInput" type="text" placeholder="Enter input here...">
+                    </div>
+                    <div class="result-box" id="resultBox" style="color:#666;">Click Run to execute your code...</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const COMPILER_URL = 'https://respectful-motivation-production-ea93.up.railway.app/api/compiler/run';
+        let questionData = null;
+        let currentIndex = 0;
+
+        // ── Timer ──────────────────────────────────────────────
+        const TIMER_LIMITS = { easy: 3 * 60, medium: 6 * 60, hard: 10 * 60 };
+        let timerSeconds = 180;
+        let timerInterval = null;
+
+        function startTimer(difficulty) {
+            timerSeconds = TIMER_LIMITS[difficulty] || 180;
+            clearInterval(timerInterval);
+            updateTimerDisplay();
+            timerInterval = setInterval(() => {
+                timerSeconds--;
+                updateTimerDisplay();
+                if (timerSeconds <= 0) { clearInterval(timerInterval); onTimerEnd(); }
+            }, 1000);
+        }
+
+        function updateTimerDisplay() {
+            const mins = Math.floor(timerSeconds / 60);
+            const secs = timerSeconds % 60;
+            const box  = document.getElementById('timerBox');
+            box.textContent = `${String(mins).padStart(2,'0')}:${String(secs).padStart(2,'0')}`;
+            box.style.color = timerSeconds <= 30 ? '#f87171' : timerSeconds <= 60 ? '#fbbf24' : '#e0e0e0';
+            box.style.borderColor = timerSeconds <= 30 ? '#f87171' : timerSeconds <= 60 ? '#fbbf24' : '#3d2a52';
+        }
+
+        function onTimerEnd() {
+            const box = document.getElementById('timerBox');
+            box.textContent = '00:00';
+            box.style.color = '#f87171';
+            alert('⏰ Time is up! Try the next question.');
+        }
+        // ──────────────────────────────────────────────────────
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const raw = sessionStorage.getItem('exploreQuestion');
+            if (!raw) { window.location.href = 'explore.html'; return; }
+            questionData = JSON.parse(raw);
+            currentIndex = questionData.index || 0;
+            loadQuestion(currentIndex);
+        });
+
+        function loadQuestion(index) {
+            const all = questionData.allQuestions;
+            if (!all || index < 0 || index >= all.length) return;
+            currentIndex = index;
+            const q = all[index];
+
+            document.title = q.title + ' - CampusCode';
+            document.getElementById('problemTitle').textContent = `${index + 1}. ${q.title}`;
+
+            const diff = q.difficulty || 'easy';
+            document.getElementById('problemBadges').innerHTML = `
+                <span class="badge badge-${diff}">${capitalize(diff)}</span>
+                <span class="badge badge-topic">${escHtml(questionData.topic)}</span>
+                <span class="badge" style="background:rgba(233,30,99,0.1);color:#e91e63;">✨ AI</span>`;
+
+            document.getElementById('problemDesc').innerHTML = `<p>${escHtml(q.description)}</p>`;
+
+            const exampleHtml = q.example ? `
+                <div class="example-box">
+                    <strong>Example / Hint:</strong>
+                    <pre>${escHtml(q.example)}</pre>
+                </div>` : '';
+            const timeLimit = { easy: '3 min', medium: '6 min', hard: '10 min' }[q.difficulty || 'easy'] || '6 min';
+            const noteHtml = `
+                <div class="example-box">
+                    <strong>Note:</strong>
+                    <pre>• Time limit: ${timeLimit}\n• Write clean, working code</pre>
+                </div>`;
+            document.getElementById('problemExample').innerHTML = exampleHtml + noteHtml;
+
+            document.getElementById('codeEditor').value = getTemplate(document.getElementById('langSelect').value);
+            updateLineNumbers();
+            document.getElementById('resultBox').innerHTML = '<span style="color:#666;">Click Run to execute your code...</span>';
+            startTimer(q.difficulty || 'easy');
+        }
+
+        function prevQuestion() {
+            const all = questionData?.allQuestions;
+            if (all && currentIndex > 0) loadQuestion(currentIndex - 1);
+        }
+
+        function nextQuestion() {
+            const all = questionData?.allQuestions;
+            if (all && currentIndex < all.length - 1) loadQuestion(currentIndex + 1);
+            else alert('You have reached the last question! Go back to Explore for more.');
+        }
+
+        function getTemplate(lang) {
+            const t = {
+                c: '#include <stdio.h>\n\nint main() {\n    // Write your solution here\n    printf("Hello, World!\\n");\n    return 0;\n}',
+                python: '# Write your solution here\nprint("Hello, World!")',
+                java: 'public class Solution {\n    public static void main(String[] args) {\n        // Write your solution here\n        System.out.println("Hello, World!");\n    }\n}',
+                php: '<?php\n// Write your solution here\necho "Hello, World!";\n?>',
+                r: '# Write your solution here\ncat("Hello, World!\\n")'
+            };
+            return t[lang] || '// Write your code here';
+        }
+
+        document.getElementById('langSelect').addEventListener('change', function() {
+            document.getElementById('codeEditor').value = getTemplate(this.value);
+            updateLineNumbers();
+        });
+
+        function needsInput(code, language) {
+            const patterns = { c: /scanf|gets|fgets|getchar/, python: /input\s*\(/, php: /readline|fgets\s*\(\s*STDIN/, r: /readline|scan/ };
+            return patterns[language]?.test(code) || false;
+        }
+
+        async function runCode() {
+            const code = document.getElementById('codeEditor').value.trim();
+            const language = document.getElementById('langSelect').value;
+            if (!code) { alert('Please write some code first!'); return; }
+
+            const hasInput = needsInput(code, language);
+            const inputSection = document.getElementById('inputSection');
+            const testInput = document.getElementById('testInput');
+            inputSection.style.display = hasInput ? 'block' : 'none';
+
+            if (hasInput && !testInput.value.trim()) {
+                document.getElementById('resultBox').innerHTML = '<span style="color:#fbbf24;">⚠ Your program needs input! Type your input above and click Run again.</span>';
+                return;
+            }
+
+            const input = hasInput ? testInput.value : '';
+            document.getElementById('runBtn').disabled = true;
+            document.getElementById('runBtn').textContent = '⟳ Running...';
+            document.getElementById('resultBox').innerHTML = '<span style="color:#fbbf24;">⟳ Running your code...</span>';
+
+            try {
+                const res = await fetch(COMPILER_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ code, language, input })
+                });
+                const data = await res.json();
+                showResult(data);
+            } catch (err) {
+                document.getElementById('resultBox').innerHTML = `<div style="color:#f87171; font-weight:600;">✗ Cannot connect to backend</div><div style="color:#b0b0b0; font-size:0.85rem; margin-top:0.5rem;">Make sure the backend server is running on port 5000.</div>`;
+            } finally {
+                document.getElementById('runBtn').disabled = false;
+                document.getElementById('runBtn').textContent = '▶ Run';
+            }
+        }
+
+        function showResult(data) {
+            const box = document.getElementById('resultBox');
+            if (data.success) {
+                const output = data.stdout || '(no output)';
+                const warnings = data.stderr ? `<div style="color:#fbbf24; font-size:0.82rem; margin-top:0.5rem;"><strong>Warnings:</strong><pre style="white-space:pre-wrap;">${escHtml(data.stderr)}</pre></div>` : '';
+                box.innerHTML = `<div style="color:#4ade80; font-weight:600; margin-bottom:0.5rem;">✓ Executed Successfully</div><pre style="background:#0d0d1a; padding:0.8rem; border-radius:5px; color:#e0e0e0; font-size:0.85rem; white-space:pre-wrap; border:1px solid #2a1a3d;">${escHtml(output)}</pre>${warnings}`;
+            } else if (data.type === 'compile_error') {
+                box.innerHTML = `<div style="color:#f87171; font-weight:600; margin-bottom:0.5rem;">✗ Compilation Error</div><pre style="background:#0d0d1a; padding:0.8rem; border-radius:5px; color:#f87171; font-size:0.85rem; white-space:pre-wrap; border:1px solid #3d1a1a;">${escHtml(data.stderr)}</pre>`;
+            } else if (data.type === 'runtime_error') {
+                box.innerHTML = `<div style="color:#f87171; font-weight:600; margin-bottom:0.5rem;">✗ Runtime Error</div><pre style="background:#0d0d1a; padding:0.8rem; border-radius:5px; color:#f87171; font-size:0.85rem; white-space:pre-wrap; border:1px solid #3d1a1a;">${escHtml(data.stderr)}</pre>`;
+            } else if (data.type === 'tle') {
+                box.innerHTML = `<div style="color:#fbbf24; font-weight:600;">⚠ Time Limit Exceeded (10s)</div>`;
+            } else {
+                box.innerHTML = `<div style="color:#f87171; font-weight:600; margin-bottom:0.5rem;">✗ Error</div><pre style="background:#0d0d1a; padding:0.8rem; border-radius:5px; color:#f87171; font-size:0.85rem; white-space:pre-wrap;">${escHtml(data.stderr || data.error || 'Unknown error')}</pre>`;
+            }
+        }
+
+        function escHtml(str) { return String(str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+        function capitalize(s) { return s.charAt(0).toUpperCase() + s.slice(1); }
+
+        document.getElementById('codeEditor').addEventListener('keydown', function(e) {
+            if (e.key === 'Tab') {
+                e.preventDefault();
+                const s = this.selectionStart;
+                this.value = this.value.substring(0, s) + '    ' + this.value.substring(this.selectionEnd);
+                this.selectionStart = this.selectionEnd = s + 4;
+            }
+            updateLineNumbers();
+        });
+
+        function updateLineNumbers() {
+            const lines = document.getElementById('codeEditor').value.split('\n').length;
+            document.getElementById('lineNumbers').innerHTML = Array.from({length: lines}, (_, i) => i + 1).join('<br>');
+        }
+
+        document.getElementById('codeEditor').addEventListener('input', updateLineNumbers);
+        document.getElementById('codeEditor').addEventListener('scroll', function() {
+            document.getElementById('lineNumbers').scrollTop = this.scrollTop;
+        });
+
+        const bottomResizer = document.getElementById('bottomResizer');
+        const bottomPanel = document.getElementById('bottomPanel');
+        let isResizingBottom = false;
+        bottomResizer.addEventListener('mousedown', () => isResizingBottom = true);
+        document.addEventListener('mousemove', e => {
+            if (!isResizingBottom) return;
+            const newHeight = bottomPanel.parentElement.getBoundingClientRect().bottom - e.clientY;
+            if (newHeight > 80 && newHeight < window.innerHeight * 0.7) bottomPanel.style.height = newHeight + 'px';
+        });
+        document.addEventListener('mouseup', () => isResizingBottom = false);
+
+        const resizer = document.getElementById('resizer');
+        const leftPanel = document.getElementById('leftPanel');
+        let isResizing = false;
+        resizer.addEventListener('mousedown', () => isResizing = true);
+        document.addEventListener('mousemove', e => { if (isResizing && e.clientX > 250 && e.clientX < window.innerWidth - 300) leftPanel.style.width = e.clientX + 'px'; });
+        document.addEventListener('mouseup', () => isResizing = false);
+    </script>
+</body>
+</html>

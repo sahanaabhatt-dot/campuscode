@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contact - CampusCode</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    
+    <header class="navbar">
+        <div class="logo"><img src="logo.svg" alt="CampusCode Logo" style="height: 40px; vertical-align: middle; margin-right: 8px;"><span style="font-family: 'Righteous', sans-serif; letter-spacing: 1px;">CampusCode</span></div>
+        <nav>
+            <a href="index.html">Home</a>
+            <a href="explore.html">Explore</a>
+            <a href="about.html">About</a>
+            <a href="contact.html">Contact</a>
+            <a href="login.html" id="navLogin">Login</a>
+            <a href="register.html" id="navRegister">Register</a>
+            <a href="dashboard.html" id="navDashboard" style="display:none; background:linear-gradient(135deg,#e91e63,#9c27b0); color:#fff; padding:0.4rem 1rem; border-radius:6px;">Dashboard</a>
+        </nav>
+    </header>
+
+    
+    <section class="contact-section">
+        <div class="contact-container">
+            <h2>Get In Touch</h2>
+            <p class="contact-subtitle">Have questions? We'd love to hear from you!</p>
+            
+            <div class="contact-content">
+                <div class="contact-info">
+                    <div class="contact-item">
+                        <div class="contact-icon">📧</div>
+                        <h3>Email</h3>
+                        <p>support@campuscode.com</p>
+                    </div>
+                    <div class="contact-item">
+                        <div class="contact-icon">📱</div>
+                        <h3>Phone</h3>
+                        <p>+91 1234567890</p>
+                    </div>
+                    <div class="contact-item">
+                        <div class="contact-icon">📍</div>
+                        <h3>Location</h3>
+                        <p>Bangalore, Karnataka, India</p>
+                    </div>
+                    <div class="contact-item">
+                        <div class="contact-icon">⏰</div>
+                        <h3>Working Hours</h3>
+                        <p>Mon - Fri: 9:00 AM - 6:00 PM</p>
+                    </div>
+                </div>
+                
+                <form class="contact-form">
+                    <h3>Send us a Message</h3>
+                    <input type="text" placeholder="Your Name" required>
+                    <input type="email" placeholder="Your Email" required>
+                    <input type="text" placeholder="Subject" required>
+                    <textarea placeholder="Your Message" rows="6" required></textarea>
+                    <button type="submit" class="primary-btn">Send Message</button>
+                </form>
+            </div>
+        </div>
+    </section>
+
+    
+    <footer class="footer">
+        <div class="footer-content">
+            <div class="footer-section">
+                <h3>CampusCode</h3>
+                <p>Your ultimate platform for BCA coding practice.
+                     Master programming with syllabus based problems.</p>
+            </div>
+            
+            <div class="footer-section">
+                <h4>Quick Links</h4>
+                <a href="index.html">Home</a>
+                <a href="about.html">About Us</a>
+                <a href="contact.html">Contact</a>
+                <a href="login.html">Login</a>
+            </div>
+            <div class="footer-section">
+                <h4>Connect With Us</h4>
+                <div class="social-links">
+                    <a href="https://facebook.com" target="_blank">Facebook</a>
+                    <a href="https://twitter.com" target="_blank">Twitter</a>
+                    <a href="https://instagram.com" target="_blank">Instagram</a>
+                    <a href="https://linkedin.com" target="_blank">LinkedIn</a>
+                </div>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2026 CampusCode. All rights reserved. | <a href="#">Privacy Policy</a> | <a href="#">Terms of Service</a></p>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+    <script>
+        const _u = localStorage.getItem('currentUser'), _t = localStorage.getItem('authToken');
+        if (_u && _t) {
+            document.getElementById('navLogin').style.display = 'none';
+            document.getElementById('navRegister').style.display = 'none';
+            document.getElementById('navDashboard').style.display = 'inline-block';
+        }
+    </script>
+</body>
+</html>
