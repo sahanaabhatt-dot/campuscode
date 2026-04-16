@@ -313,6 +313,8 @@
             document.getElementById('codeEditor').value = getTemplate(document.getElementById('langSelect').value);
             updateLineNumbers();
             document.getElementById('resultBox').innerHTML = 'Run your code to see results.';
+            // Hide submit until correct answer
+            document.getElementById('submitBtn').style.display = 'none';
             const url = new URL(window.location);
             url.searchParams.set('q', index);
             window.history.replaceState({}, '', url);
@@ -418,20 +420,28 @@
                             }
                         }
                         trackAttempt(true);
+                        // Show submit button on correct answer
+                        document.getElementById('submitBtn').style.display = 'inline-flex';
                     } else {
-                        va.innerHTML = `<div style="color:#f87171; font-weight:700; font-size:1rem;">✗ Wrong Answer</div><div style="color:#888; font-size:0.82rem; margin-top:0.3rem;">${escHtml(verdict.reason)}</div>`;
+                        va.innerHTML = `<div style="color:#f87171; font-weight:700; font-size:1rem;">✗ Wrong Answer</div><div style="color:#888; font-size:0.82rem; margin-top:0.3rem;">${escHtml(verdict.reason)}</div><div style="color:#fbbf24; font-size:0.82rem; margin-top:0.4rem;">Fix your code and try again.</div>`;
                         trackAttempt(false);
+                        // Hide submit button on wrong answer
+                        document.getElementById('submitBtn').style.display = 'none';
                     }
                 }
 
             } else if (data.type === 'compile_error') {
                 box.innerHTML = `<div style="color:#f87171; font-weight:600; margin-bottom:0.5rem;">✗ Compilation Error</div><pre style="background:#0d0d1a; padding:0.8rem; border-radius:5px; color:#f87171; font-size:0.85rem; white-space:pre-wrap; border:1px solid #3d1a1a;">${escHtml(data.stderr)}</pre>`;
+                document.getElementById('submitBtn').style.display = 'none';
             } else if (data.type === 'runtime_error') {
                 box.innerHTML = `<div style="color:#f87171; font-weight:600; margin-bottom:0.5rem;">✗ Runtime Error</div><pre style="background:#0d0d1a; padding:0.8rem; border-radius:5px; color:#f87171; font-size:0.85rem; white-space:pre-wrap; border:1px solid #3d1a1a;">${escHtml(data.stderr)}</pre>`;
+                document.getElementById('submitBtn').style.display = 'none';
             } else if (data.type === 'tle') {
                 box.innerHTML = `<div style="color:#fbbf24; font-weight:600;">⚠ Time Limit Exceeded (10s)</div>`;
+                document.getElementById('submitBtn').style.display = 'none';
             } else {
                 box.innerHTML = `<div style="color:#f87171; font-weight:600; margin-bottom:0.5rem;">✗ Error</div><pre style="background:#0d0d1a; padding:0.8rem; border-radius:5px; color:#f87171; font-size:0.85rem; white-space:pre-wrap;">${escHtml(data.stderr || data.error || 'Unknown error')}</pre>`;
+                document.getElementById('submitBtn').style.display = 'none';
             }
         }
 
