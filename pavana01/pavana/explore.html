@@ -29,15 +29,17 @@
             max-width: 680px;
             margin: 0 auto 1rem;
             align-items: center;
+            flex-wrap: wrap;
         }
         .search-input {
             flex: 1;
+            min-width: 0;
             padding: 0.75rem 1.1rem;
             background: #2a1a3d;
             border: 1px solid #3d2a52;
             border-radius: 8px;
             color: #e0e0e0;
-            font-size: 0.95rem;
+            font-size: 16px;
             outline: none;
             transition: border-color 0.2s;
         }
@@ -55,6 +57,7 @@
             cursor: pointer;
             transition: opacity 0.2s, transform 0.2s;
             white-space: nowrap;
+            min-height: 44px;
         }
         .generate-btn:hover { opacity: 0.9; transform: translateY(-1px); }
         .generate-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
@@ -73,9 +76,21 @@
             align-items: center;
             gap: 0.4rem;
             white-space: nowrap;
+            min-height: 44px;
         }
         .img-upload-btn:hover { border-color: #e91e63; color: #e91e63; }
         #imageFileInput { display: none; }
+
+        @media (max-width: 600px) {
+            .explore-hero { padding: 1.5rem 1rem 1rem; }
+            .explore-hero h1 { font-size: 1.3rem; }
+            .input-row { gap: 0.5rem; }
+            .search-input { width: 100%; flex-basis: 100%; }
+            .img-upload-btn { flex: 1; justify-content: center; }
+            .generate-btn { flex: 2; }
+            .topic-chips { gap: 0.4rem; }
+            .chip { font-size: 0.75rem; padding: 0.25rem 0.7rem; }
+        }
 
         /* ── Image preview ── */
         .image-preview-wrap {
