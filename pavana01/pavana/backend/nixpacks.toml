@@ -1,2 +1,8 @@
 [phases.setup]
-nixPkgs = ["nodejs", "python3", "gcc", "jdk17", "php", "R"]
+nixPkgs = ["nodejs_20", "python311", "gcc", "jdk17", "php82", "R"]
+
+[phases.install]
+cmds = ["npm ci"]
+
+[start]
+cmd = "node server.js"
