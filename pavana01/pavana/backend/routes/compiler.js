@@ -25,7 +25,7 @@ const PHP = process.platform === 'win32'
     ? '"C:\\xampp\\php\\php"'
     : 'php';
 const PYTHON = process.platform === 'win32'
-    ? '"C:\\Users\\sahan\\AppData\\Local\\Python\\bin\\python"'
+    ? '"C:\\Users\\sahan\\AppData\\Local\\Python\\bin\\python3"'
     : 'python3';
 
 function getTempDir() {
