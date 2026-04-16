@@ -198,7 +198,7 @@
     <script>
         let selectedSubject = null;
         let currentIndex = 0;
-        let submissions = [];
+        let submissions = JSON.parse(localStorage.getItem('submissions') || '[]');
         const COMPILER_URL = 'https://campuscode-production.up.railway.app/api/compiler/run';
 
         // ── Timer ──────────────────────────────────────────────
@@ -297,6 +297,7 @@
             if (!selectedSubject) { window.location.href = 'problems.html'; return; }
             loadProblem(currentIndex);
             startTimer(selectedSubject.problems[currentIndex].difficulty);
+            updateSubmissions();
         });
 
         function loadProblem(index) {
@@ -569,7 +570,8 @@
                         }
                     }
 
-                    submissions.unshift({ problem: problem.title, status: 'Accepted', time: new Date().toLocaleTimeString() });
+                    submissions.unshift({ problem: problem.title, status: 'Accepted', time: new Date().toLocaleTimeString(), subject: selectedSubject.name });
+                    localStorage.setItem('submissions', JSON.stringify(submissions.slice(0, 50)));
                     updateSubmissions();
                 }
             } catch (err) {
@@ -581,11 +583,16 @@
         }
 
         function updateSubmissions() {
-            document.getElementById('submissionsList').innerHTML = submissions.map(s => `
-                <div style="padding:0.5rem 0; border-bottom:1px solid #2a1a3d; font-size:0.85rem;">
+            const list = document.getElementById('submissionsList');
+            if (!submissions.length) {
+                list.innerHTML = '<p style="color:#666; margin-top:2rem; text-align:center;">No submissions yet.</p>';
+                return;
+            }
+            list.innerHTML = submissions.map(s => `
+                <div style="padding:0.6rem 0; border-bottom:1px solid #2a1a3d; font-size:0.85rem;">
                     <span style="color:#4ade80;">✓ ${s.status}</span>
-                    <span style="color:#666; margin-left:1rem;">${s.problem}</span>
-                    <span style="color:#444; float:right;">${s.time}</span>
+                    <span style="color:#b0b0b0; margin-left:0.8rem;">${s.problem}</span>
+                    <span style="color:#666; float:right; font-size:0.78rem;">${s.time}</span>
                 </div>`).join('');
         }
 
