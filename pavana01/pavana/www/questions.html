@@ -201,6 +201,44 @@
         let submissions = JSON.parse(localStorage.getItem('submissions') || '[]');
         const COMPILER_URL = 'https://campuscode-production.up.railway.app/api/compiler/run';
 
+        // ── Practice Time Tracking ─────────────────────────────
+        let activeSeconds = 0;
+        let lastActivityTime = null;
+        const IDLE_THRESHOLD = 30000;
+
+        function onUserActivity() {
+            const now = Date.now();
+            if (lastActivityTime) {
+                const gap = now - lastActivityTime;
+                if (gap < IDLE_THRESHOLD) activeSeconds += gap / 1000;
+            }
+            lastActivityTime = now;
+        }
+
+        function savePracticeTime() {
+            if (activeSeconds < 1) return;
+            const user = JSON.parse(localStorage.getItem('currentUser'));
+            if (!user) return;
+            if (!user.stats) user.stats = { problemsSolved: 0, practiceTime: 0, registeredDate: new Date().toISOString() };
+            user.stats.practiceTime = (user.stats.practiceTime || 0) + Math.floor(activeSeconds);
+            localStorage.setItem('currentUser', JSON.stringify(user));
+            activeSeconds = 0;
+        }
+
+        window.addEventListener('beforeunload', savePracticeTime);
+        setInterval(savePracticeTime, 10000);
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const editor = document.getElementById('codeEditor');
+            if (editor) {
+                editor.addEventListener('keydown', onUserActivity);
+                editor.addEventListener('input', onUserActivity);
+            }
+            document.getElementById('runBtn')?.addEventListener('click', onUserActivity);
+            document.getElementById('submitBtn')?.addEventListener('click', onUserActivity);
+        });
+        // ──────────────────────────────────────────────────────
+
         // ── Timer ──────────────────────────────────────────────
         const TIMER_LIMITS = { easy: 3 * 60, medium: 6 * 60, hard: 10 * 60 };
         let timerSeconds = 3 * 60;

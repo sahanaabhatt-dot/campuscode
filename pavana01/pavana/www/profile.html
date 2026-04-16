@@ -199,10 +199,12 @@
             const today = new Date();
             const daysActive = Math.max(1, Math.floor((today - registeredDate) / (1000 * 60 * 60 * 24)) + 1);
 
-            const practiceMinutes = currentUser.stats.practiceTime || 0;
-            const hoursDisplay = practiceMinutes < 60
-                ? practiceMinutes + ' min'
-                : Math.floor(practiceMinutes / 60) + 'h ' + (practiceMinutes % 60) + 'min';
+            const practiceSeconds = currentUser.stats.practiceTime || 0;
+            const hoursDisplay = practiceSeconds < 60
+                ? Math.floor(practiceSeconds) + ' sec'
+                : practiceSeconds < 3600
+                ? Math.floor(practiceSeconds / 60) + ' min'
+                : Math.floor(practiceSeconds / 3600) + 'h ' + Math.floor((practiceSeconds % 3600) / 60) + 'min';
 
             // success rate: solved out of total syllabus problems
             let totalAll = 0;
