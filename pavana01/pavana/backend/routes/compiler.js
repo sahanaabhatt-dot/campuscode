@@ -6,13 +6,27 @@ const path = require('path');
 const os = require('os');
 
 const TIMEOUT = 10000;
-const JAVA = '"C:\\Program Files\\Eclipse Adoptium\\jdk-25.0.2.10-hotspot\\bin\\java"';
-const JAVAC = '"C:\\Program Files\\Eclipse Adoptium\\jdk-25.0.2.10-hotspot\\bin\\javac"';
-const RSCRIPT = '"C:\\Program Files\\R\\R-4.5.3\\bin\\Rscript"';
-const GCC = '"C:\\msys64\\mingw64\\bin\\gcc"';
-const GPP = '"C:\\msys64\\mingw64\\bin\\g++"';
-const PHP = '"C:\\xampp\\php\\php"';
-const PYTHON = '"C:\\Users\\sahan\\AppData\\Local\\Python\\bin\\python"';
+const JAVA = process.platform === 'win32'
+    ? '"C:\\Program Files\\Eclipse Adoptium\\jdk-25.0.2.10-hotspot\\bin\\java"'
+    : 'java';
+const JAVAC = process.platform === 'win32'
+    ? '"C:\\Program Files\\Eclipse Adoptium\\jdk-25.0.2.10-hotspot\\bin\\javac"'
+    : 'javac';
+const RSCRIPT = process.platform === 'win32'
+    ? '"C:\\Program Files\\R\\R-4.5.3\\bin\\Rscript"'
+    : 'Rscript';
+const GCC = process.platform === 'win32'
+    ? '"C:\\msys64\\mingw64\\bin\\gcc"'
+    : 'gcc';
+const GPP = process.platform === 'win32'
+    ? '"C:\\msys64\\mingw64\\bin\\g++"'
+    : 'g++';
+const PHP = process.platform === 'win32'
+    ? '"C:\\xampp\\php\\php"'
+    : 'php';
+const PYTHON = process.platform === 'win32'
+    ? '"C:\\Users\\sahan\\AppData\\Local\\Python\\bin\\python"'
+    : 'python3';
 
 function getTempDir() {
     const dir = path.join(os.tmpdir(), 'cc_' + Date.now() + '_' + Math.random().toString(36).substr(2, 6));
@@ -25,7 +39,9 @@ function cleanup(dir) {
 }
 
 function runCommand(command, input, timeout) {
-    const env = { ...process.env, PATH: process.env.PATH + ';C:\\msys64\\mingw64\\bin' };
+    const env = process.platform === 'win32'
+        ? { ...process.env, PATH: process.env.PATH + ';C:\\msys64\\mingw64\\bin' }
+        : { ...process.env };
     return new Promise((resolve) => {
         const proc = exec(command, { timeout, env }, (error, stdout, stderr) => {
             if (error && error.killed) {
@@ -42,7 +58,9 @@ function runCommand(command, input, timeout) {
 }
 
 function runExe(exePath, input, timeout) {
-    const env = { ...process.env, PATH: process.env.PATH + ';C:\\msys64\\mingw64\\bin' };
+    const env = process.platform === 'win32'
+        ? { ...process.env, PATH: process.env.PATH + ';C:\\msys64\\mingw64\\bin' }
+        : { ...process.env };
     return new Promise((resolve) => {
         const proc = execFile(exePath, [], { timeout, encoding: 'utf8', env }, (error, stdout, stderr) => {
             if (error && error.killed) {
