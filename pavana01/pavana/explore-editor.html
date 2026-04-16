@@ -53,6 +53,27 @@
         .resizer { width: 4px; background: #2a1a3d; cursor: col-resize; }
         .resizer:hover { background: #e91e63; }
         .ai-badge { background: linear-gradient(135deg, rgba(233,30,99,0.2), rgba(156,39,176,0.2)); border: 1px solid rgba(233,30,99,0.3); color: #e91e63; padding: 0.15rem 0.6rem; border-radius: 10px; font-size: 0.72rem; font-weight: 600; }
+
+        /* Mobile tabs */
+        .mobile-tabs { display: none; background: #150a25; border-bottom: 1px solid #2a1a3d; }
+        .mobile-tab-btn { flex: 1; padding: 0.7rem; background: none; border: none; color: #888; font-size: 0.85rem; cursor: pointer; border-bottom: 2px solid transparent; }
+        .mobile-tab-btn.active { color: #e91e63; border-bottom-color: #e91e63; }
+
+        @media (max-width: 768px) {
+            body { height: auto; min-height: 100vh; }
+            .main-layout { flex-direction: column; overflow: visible; height: auto; }
+            .left-panel { width: 100%; min-width: unset; border-right: none; border-bottom: 1px solid #2a1a3d; max-height: none; overflow: visible; }
+            .right-panel { height: 100vh; }
+            .resizer { display: none; }
+            .mobile-tabs { display: flex; }
+            .back-btn span { display: none; }
+            .top-bar { flex-wrap: wrap; gap: 0.5rem; padding: 0.5rem; }
+            .top-bar-left { gap: 0.5rem; }
+            .top-bar-logo span { display: none; }
+            .code-area { font-size: 14px; }
+            .line-numbers { font-size: 14px; }
+            .bottom-panel { height: 250px; }
+        }
     </style>
 </head>
 <body>
@@ -75,6 +96,11 @@
         <div style="display:flex; align-items:center; gap:0.8rem;">
             <a href="explore.html" class="back-btn">← Back to Explore</a>
         </div>
+    </div>
+
+    <div class="mobile-tabs">
+        <button class="mobile-tab-btn active" onclick="switchMobileTab('problem', this)">📋 Problem</button>
+        <button class="mobile-tab-btn" onclick="switchMobileTab('editor', this)">💻 Editor</button>
     </div>
 
     <div class="main-layout">
@@ -334,6 +360,20 @@
 
         function escHtml(str) { return String(str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
         function capitalize(s) { return s.charAt(0).toUpperCase() + s.slice(1); }
+
+        function switchMobileTab(tab, btn) {
+            document.querySelectorAll('.mobile-tab-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            const left = document.getElementById('leftPanel');
+            const right = document.querySelector('.right-panel');
+            if (tab === 'problem') {
+                left.style.display = 'flex';
+                right.style.display = 'none';
+            } else {
+                left.style.display = 'none';
+                right.style.display = 'flex';
+            }
+        }
 
         document.getElementById('codeEditor').addEventListener('keydown', function(e) {
             if (e.key === 'Tab') {
