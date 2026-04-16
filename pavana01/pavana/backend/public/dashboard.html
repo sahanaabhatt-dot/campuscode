@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <script src="redirect.js"></script>
+    <script src="mobile-nav.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - CampusCode</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="data/syllabus.js"></script>
+</head>
+<body>
+    
+    <header class="navbar">
+        <div class="logo"><img src="logo.svg" alt="CampusCode Logo" style="height: 40px; vertical-align: middle; margin-right: 8px;"><span style="font-family: 'Righteous', sans-serif; letter-spacing: 1px;">CampusCode</span></div>
+        <nav>
+            <a href="index.html?home=1" id="homeLink">Home</a>
+            <a href="explore.html">Explore</a>
+            <a href="problems.html">Problems</a>
+            <a href="dashboard.html">Dashboard</a>
+            <a href="profile.html">Profile</a>
+            <a href="#" id="logoutLink">Logout</a>
+        </nav>
+    </header>
+
+    
+    <div class="dashboard-layout">
+        
+        <aside class="sidebar">
+            <div class="user-info">
+                <div class="user-avatar">S</div>
+                <h3>Student Name</h3>
+                <p>Semester 3</p>
+            </div>
+            
+            <nav class="sidebar-nav">
+                <a href="dashboard.html" class="active" id="navDashboard">Dashboard</a>
+                <a href="#" id="navMySubjects" onclick="showSection('subjects')">My Subjects</a>
+                <a href="problems.html">Practice Problems</a>
+                <a href="#" id="navPerformance" onclick="showSection('performance')">Performance</a>
+                <a href="#" id="navSettings" onclick="showSection('settings')">Settings</a>
+            </nav>
+        </aside>
+
+        
+        <main class="dashboard-main">
+            <h1>Welcome Back, Student!</h1>
+            
+            
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <h3 id="dashProblemsSolved">0</h3>
+                    <p>Problems Solved</p>
+                </div>
+                <div class="stat-card">
+                    <h3 id="dashSubjects">6</h3>
+                    <p>Subjects</p>
+                </div>
+                <div class="stat-card">
+                    <h3 id="dashHoursPracticed">0</h3>
+                    <p id="dashHoursLabel">Minutes Practiced</p>
+                </div>
+                <div class="stat-card">
+                    <h3 id="dashSuccessRate">0%</h3>
+                    <p>Success Rate</p>
+                </div>
+            </div>
+
+            
+            <section class="semester-section">
+                <h2>Select Semester</h2>
+                <div class="semester-grid">
+                    <button class="semester-btn">Semester 1</button>
+                    <button class="semester-btn">Semester 2</button>
+                    <button class="semester-btn active">Semester 3</button>
+                    <button class="semester-btn">Semester 4</button>
+                    <button class="semester-btn">Semester 5</button>
+                    <button class="semester-btn">Semester 6</button>
+                </div>
+            </section>
+
+            
+            <section class="subjects-section" id="sectionSubjects">
+                <h2>Your Subjects</h2>
+                <div class="subjects-grid">
+                    <div class="subject-card">
+                        <h3>Data Structures</h3>
+                        <p>15 problems available</p>
+                        <div class="progress-bar">
+                            <div class="progress" style="width: 60%"></div>
+                        </div>
+                        <a href="problems.html" class="primary-btn">Start Practice</a>
+                    </div>
+                    
+                    <div class="subject-card">
+                        <h3>Java Programming</h3>
+                        <p>20 problems available</p>
+                        <div class="progress-bar">
+                            <div class="progress" style="width: 40%"></div>
+                        </div>
+                        <a href="problems.html" class="primary-btn">Start Practice</a>
+                    </div>
+                    
+                    <div class="subject-card">
+                        <h3>Database Management</h3>
+                        <p>12 problems available</p>
+                        <div class="progress-bar">
+                            <div class="progress" style="width: 25%"></div>
+                        </div>
+                        <a href="problems.html" class="primary-btn">Start Practice</a>
+                    </div>
+                </div>
+            </section>
+
+            
+            <section id="sectionPerformance" style="display:none;">
+                <h2>Performance</h2>
+                <div class="stats-grid" style="margin-bottom:2rem;">
+                    <div class="stat-card">
+                        <h3 id="perfSolved">0</h3>
+                        <p>Problems Solved</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3 id="perfRate">0%</h3>
+                        <p>Success Rate</p>
+                    </div>
+                <div style="margin-bottom:1rem;">
+                        <div style="display:flex; justify-content:space-between; margin-bottom:0.4rem;">
+                            <span style="color:#b0b0b0;">Practice Time</span>
+                            <span id="perfHours" style="color:#b0b0b0;">0 min</span>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <h3 id="perfDays">0</h3>
+                        <p>Days Active</p>
+                    </div>
+                </div>
+                <div style="background:#1a1a2e; border-radius:10px; padding:1.5rem; border:1px solid #2a1a3d;">
+                    <h3 style="color:#fff; margin-bottom:1rem;">Difficulty Breakdown</h3>
+                    <div style="margin-bottom:1rem;">
+                        <div style="display:flex; justify-content:space-between; margin-bottom:0.4rem;">
+                            <span style="color:#4ade80;">Easy</span>
+                            <span id="perfEasy" style="color:#b0b0b0;">0 solved</span>
+                        </div>
+                        <div style="background:#2a1a3d; border-radius:5px; height:8px;">
+                            <div id="perfEasyBar" style="background:#4ade80; height:8px; border-radius:5px; width:0%;"></div>
+                        </div>
+                    </div>
+                    <div style="margin-bottom:1rem;">
+                        <div style="display:flex; justify-content:space-between; margin-bottom:0.4rem;">
+                            <span style="color:#fbbf24;">Medium</span>
+                            <span id="perfMedium" style="color:#b0b0b0;">0 solved</span>
+                        </div>
+                        <div style="background:#2a1a3d; border-radius:5px; height:8px;">
+                            <div id="perfMediumBar" style="background:#fbbf24; height:8px; border-radius:5px; width:0%;"></div>
+                        </div>
+                    </div>
+                    <div>
+                        <div style="display:flex; justify-content:space-between; margin-bottom:0.4rem;">
+                            <span style="color:#f87171;">Hard</span>
+                            <span id="perfHard" style="color:#b0b0b0;">0 solved</span>
+                        </div>
+                        <div style="background:#2a1a3d; border-radius:5px; height:8px;">
+                            <div id="perfHardBar" style="background:#f87171; height:8px; border-radius:5px; width:0%;"></div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            
+            <section id="sectionSettings" style="display:none;">
+                <h2>Settings</h2>
+                <div style="background:#1a1a2e; border-radius:10px; padding:1.5rem; border:1px solid #2a1a3d; max-width:500px;">
+                    <h3 style="color:#fff; margin-bottom:1.2rem;">Account Settings</h3>
+                    <div class="form-group">
+                        <label>Full Name</label>
+                        <input type="text" id="settingName" class="form-control" style="width:100%; padding:0.7rem; background:#0f0a1a; border:1px solid #3d2a52; border-radius:5px; color:#e0e0e0;">
+                    </div>
+                    <div class="form-group" style="margin-top:1rem;">
+                        <label>Email</label>
+                        <input type="email" id="settingEmail" class="form-control" style="width:100%; padding:0.7rem; background:#0f0a1a; border:1px solid #3d2a52; border-radius:5px; color:#e0e0e0;">
+                    </div>
+                    <div class="form-group" style="margin-top:1rem;">
+                        <label>Current Semester</label>
+                        <select id="settingSemester" style="width:100%; padding:0.7rem; background:#0f0a1a; border:1px solid #3d2a52; border-radius:5px; color:#e0e0e0;">
+                            <option value="1">Semester 1</option>
+                            <option value="2">Semester 2</option>
+                            <option value="3">Semester 3</option>
+                            <option value="4">Semester 4</option>
+                            <option value="5">Semester 5</option>
+                            <option value="6">Semester 6</option>
+                        </select>
+                    </div>
+                    <div style="margin-top:1.5rem; display:flex; gap:1rem;">
+                        <button class="primary-btn" onclick="saveSettings()">Save Changes</button>
+                        <a href="profile.html" class="secondary-btn" style="text-decoration:none; padding:0.6rem 1.2rem;">Full Profile</a>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script src="script.js"></script>
+    <script>
+
+        function formatTime(totalMinutes) {
+            if (totalMinutes < 1) return '0 min';
+            if (totalMinutes < 60) return totalMinutes + ' min';
+            const h = Math.floor(totalMinutes / 60);
+            const m = totalMinutes % 60;
+            return m > 0 ? h + 'h ' + m + 'min' : h + 'h';
+        }
+
+        const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+        
+        if (!currentUser) {
+
+            alert('Please login first');
+            window.location.href = 'login.html';
+        } else {
+
+            const firstLetter = currentUser.name.charAt(0).toUpperCase();
+
+            document.querySelector('.user-avatar').textContent = firstLetter;
+            document.querySelector('.sidebar .user-info h3').textContent = currentUser.name;
+            document.querySelector('.sidebar .user-info p').textContent = 'Semester ' + currentUser.semester;
+
+            document.querySelector('.dashboard-main h1').textContent = 'Welcome Back, ' + currentUser.name + '!';
+
+            if (!currentUser.stats) {
+                currentUser.stats = {
+                    problemsSolved: 0,
+                    totalProblems: 0,
+                    practiceTime: 0,
+                    subjects: 6,
+                    registeredDate: new Date().toISOString()
+                };
+                localStorage.setItem('currentUser', JSON.stringify(currentUser));
+            }
+            // Ensure registeredDate exists for older accounts
+            if (!currentUser.stats.registeredDate) {
+                currentUser.stats.registeredDate = new Date().toISOString();
+                localStorage.setItem('currentUser', JSON.stringify(currentUser));
+            }
+
+            // Reset practice time to 0 on dashboard load (fresh start)
+            // currentUser.stats.practiceTime = 0; // REMOVED - was wiping practice time
+
+            const solvedData = JSON.parse(localStorage.getItem('solvedProblems') || '{}');
+            let totalSolved = 0, totalAll = 0;
+            for (let semKey in syllabus) {
+                syllabus[semKey].subjects.forEach(subject => {
+                    subject.problems.forEach(problem => {
+                        totalAll++;
+                        if (solvedData[subject.id + '_' + problem.id]) totalSolved++;
+                    });
+                });
+            }
+            const totalAttempted = Object.keys(solvedData).length;
+            const attemptStats = JSON.parse(localStorage.getItem('attemptStats') || '{"total":0,"correct":0}');
+            const successRate = attemptStats.total > 0 ? Math.round((attemptStats.correct / attemptStats.total) * 100) : 0;
+
+            const hoursPracticed = Math.floor((currentUser.stats?.practiceTime || 0) / 60);
+
+            document.getElementById('dashProblemsSolved').textContent = totalSolved;
+            document.getElementById('dashSubjects').textContent = currentUser.stats?.subjects || 6;
+            document.getElementById('dashSuccessRate').textContent = successRate + '%';
+
+            // Real-time practice time display (only counts time from questions page)
+            function updatePracticeTime() {
+                const user = JSON.parse(localStorage.getItem('currentUser'));
+                const totalMinutes = user?.stats?.practiceTime || 0;
+                document.getElementById('dashHoursPracticed').textContent = formatTime(totalMinutes);
+                document.getElementById('dashHoursLabel').textContent = 'Time Practiced';
+            }
+
+            updatePracticeTime();
+            setInterval(updatePracticeTime, 10000);
+
+            const semesterButtons = document.querySelectorAll('.semester-btn');
+            semesterButtons.forEach((btn, index) => {
+                btn.classList.remove('active');
+                if (index + 1 === currentUser.semester) {
+                    btn.classList.add('active');
+                }
+
+                btn.addEventListener('click', () => {
+                    semesterButtons.forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    loadSubjects(index + 1);
+                });
+            });
+
+            loadSubjects(currentUser.semester);
+        }
+
+        function loadSubjects(semesterNum) {
+            const semesterKey = 'semester' + semesterNum;
+            const semesterData = syllabus[semesterKey];
+            
+            if (!semesterData) return;
+            
+            const subjectsGrid = document.querySelector('.subjects-grid');
+            subjectsGrid.innerHTML = '';
+            
+            semesterData.subjects.forEach(subject => {
+                const totalProblems = subject.problems.length;
+                const solvedProblems = getSolvedProblemsCount(subject.id);
+                const progress = totalProblems > 0 ? (solvedProblems / totalProblems) * 100 : 0;
+                
+                const subjectCard = `
+                    <div class="subject-card">
+                        <h3>${subject.name}</h3>
+                        <p>${totalProblems} problems available</p>
+                        <div class="progress-bar">
+                            <div class="progress" style="width: ${progress}%"></div>
+                        </div>
+                        <p style="font-size: 0.9rem; color: #b0b0b0; margin-top: 0.5rem;">
+                            ${solvedProblems}/${totalProblems} completed
+                        </p>
+                        <a href="questions.html?subject=${subject.id}" class="primary-btn">Start Practice</a>
+                    </div>
+                `;
+                
+                subjectsGrid.innerHTML += subjectCard;
+            });
+
+            document.getElementById('dashSubjects').textContent = semesterData.subjects.length;
+        }
+        
+        function getSolvedProblemsCount(subjectId) {
+            const solvedData = JSON.parse(localStorage.getItem('solvedProblems') || '{}');
+            let count = 0;
+            const subject = Object.keys(solvedData).filter(key => key.startsWith(subjectId + '_'));
+            return subject.length;
+        }
+
+        document.querySelector('#logoutLink').addEventListener('click', function(e) {
+            e.preventDefault();
+            localStorage.removeItem('currentUser');
+            alert('Logged out successfully!');
+            window.location.href = 'index.html';
+        });
+
+        function showSection(section) {
+
+            document.getElementById('sectionSubjects').style.display = 'none';
+            document.getElementById('sectionPerformance').style.display = 'none';
+            document.getElementById('sectionSettings').style.display = 'none';
+            document.querySelector('.semester-section').style.display = 'none';
+            document.querySelector('.stats-grid').style.display = 'none';
+
+            document.querySelectorAll('.sidebar-nav a').forEach(a => a.classList.remove('active'));
+
+            if (section === 'subjects') {
+                document.getElementById('sectionSubjects').style.display = 'block';
+                document.querySelector('.semester-section').style.display = 'block';
+                document.getElementById('navMySubjects').classList.add('active');
+            } else if (section === 'performance') {
+                document.getElementById('sectionPerformance').style.display = 'block';
+                document.getElementById('navPerformance').classList.add('active');
+                loadPerformance();
+            } else if (section === 'settings') {
+                document.getElementById('sectionSettings').style.display = 'block';
+                document.getElementById('navSettings').classList.add('active');
+                loadSettingsForm();
+            }
+        }
+
+        function loadPerformance() {
+            const user = JSON.parse(localStorage.getItem('currentUser'));
+            const solvedProblems = JSON.parse(localStorage.getItem('solvedProblems') || '{}');
+
+            let easy = 0, medium = 0, hard = 0, totalEasy = 0, totalMedium = 0, totalHard = 0;
+
+            for (let semKey in syllabus) {
+                syllabus[semKey].subjects.forEach(subject => {
+                    subject.problems.forEach(problem => {
+                        const key = subject.id + '_' + problem.id;
+                        if (problem.difficulty === 'easy') { totalEasy++; if (solvedProblems[key]) easy++; }
+                        else if (problem.difficulty === 'medium') { totalMedium++; if (solvedProblems[key]) medium++; }
+                        else { totalHard++; if (solvedProblems[key]) hard++; }
+                    });
+                });
+            }
+
+            const total = easy + medium + hard;
+            const totalAll = totalEasy + totalMedium + totalHard;
+            const rate = totalAll > 0 ? Math.round((total / totalAll) * 100) : 0;
+            const registeredDate = new Date(user.stats?.registeredDate || new Date());
+            const daysActive = Math.max(1, Math.floor((new Date() - registeredDate) / (1000 * 60 * 60 * 24)) + 1);
+
+            document.getElementById('perfSolved').textContent = total;
+            document.getElementById('perfRate').textContent = rate + '%';
+            document.getElementById('perfHours').textContent = formatTime(user.stats?.practiceTime || 0);
+            document.getElementById('perfDays').textContent = daysActive;
+
+            document.getElementById('perfEasy').textContent = easy + ' / ' + totalEasy + ' solved';
+            document.getElementById('perfMedium').textContent = medium + ' / ' + totalMedium + ' solved';
+            document.getElementById('perfHard').textContent = hard + ' / ' + totalHard + ' solved';
+
+            document.getElementById('perfEasyBar').style.width = totalEasy > 0 ? (easy / totalEasy * 100) + '%' : '0%';
+            document.getElementById('perfMediumBar').style.width = totalMedium > 0 ? (medium / totalMedium * 100) + '%' : '0%';
+            document.getElementById('perfHardBar').style.width = totalHard > 0 ? (hard / totalHard * 100) + '%' : '0%';
+        }
+
+        function loadSettingsForm() {
+            const user = JSON.parse(localStorage.getItem('currentUser'));
+            if (user) {
+                document.getElementById('settingName').value = user.name || '';
+                document.getElementById('settingEmail').value = user.email || '';
+                document.getElementById('settingSemester').value = user.semester || 1;
+            }
+        }
+
+        function saveSettings() {
+            const user = JSON.parse(localStorage.getItem('currentUser'));
+            user.name = document.getElementById('settingName').value;
+            user.email = document.getElementById('settingEmail').value;
+            user.semester = parseInt(document.getElementById('settingSemester').value);
+            localStorage.setItem('currentUser', JSON.stringify(user));
+            alert('Settings saved successfully!');
+            location.reload();
+        }
+    </script>
+</body>
+</html>

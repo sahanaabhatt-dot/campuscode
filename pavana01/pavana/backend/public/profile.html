@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <script src="redirect.js"></script>
+    <script src="mobile-nav.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profile - CampusCode</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    
+    <header class="navbar">
+        <div class="logo"><img src="logo.svg" alt="CampusCode Logo" style="height: 40px; vertical-align: middle; margin-right: 8px;"><span style="font-family: 'Righteous', sans-serif; letter-spacing: 1px;">CampusCode</span></div>
+        <nav>
+            <a href="index.html?home=1">Home</a>
+            <a href="dashboard.html">Dashboard</a>
+            <a href="explore.html">Explore</a>
+            <a href="profile.html">Profile</a>
+            <a href="#" id="logoutLink">Logout</a>
+        </nav>
+    </header>
+
+    
+    <div class="dashboard-layout">
+        
+        <aside class="sidebar">
+            <div class="user-info">
+                <div class="user-avatar">S</div>
+                <h3>Student Name</h3>
+                <p>Semester 3</p>
+            </div>
+            
+            <nav class="sidebar-nav">
+                <a href="dashboard.html">Dashboard</a>
+                <a href="#">My Subjects</a>
+                <a href="#">Practice Problems</a>
+                <a href="#">Performance</a>
+                <a href="profile.html" class="active">Profile Settings</a>
+            </nav>
+        </aside>
+
+        
+        <main class="dashboard-main">
+            <h1>My Profile</h1>
+            
+            
+            <div class="profile-container">
+                <div class="profile-header">
+                    <div class="profile-avatar-large">S</div>
+                    <div class="profile-info">
+                        <h2>Student Name</h2>
+                        <p>student@example.com</p>
+                        <p>USN: 1BCA21CS001</p>
+                    </div>
+                </div>
+
+                
+                <form class="profile-form">
+                    <h3>Personal Information</h3>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Full Name</label>
+                            <input type="text" value="Student Name" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>USN / Roll Number</label>
+                            <input type="text" value="1BCA21CS001" required>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Email Address</label>
+                            <input type="email" value="student@example.com" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Current Semester</label>
+                            <select required>
+                                <option value="1">Semester 1</option>
+                                <option value="2">Semester 2</option>
+                                <option value="3" selected>Semester 3</option>
+                                <option value="4">Semester 4</option>
+                                <option value="5">Semester 5</option>
+                                <option value="6">Semester 6</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Phone Number</label>
+                        <input type="tel" placeholder="+91 1234567890">
+                    </div>
+
+                    <h3>Change Password</h3>
+                    
+                    <div class="form-group">
+                        <label>Current Password</label>
+                        <input type="password" placeholder="Enter current password">
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>New Password</label>
+                            <input type="password" placeholder="Enter new password">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Confirm New Password</label>
+                            <input type="password" placeholder="Confirm new password">
+                        </div>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="submit" class="primary-btn">Save Changes</button>
+                        <button type="button" class="secondary-btn">Cancel</button>
+                    </div>
+                </form>
+
+                
+                <div class="account-stats">
+                    <h3>Account Statistics</h3>
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <h3 id="problemsSolved">0</h3>
+                            <p>Problems Solved</p>
+                        </div>
+                        <div class="stat-card">
+                            <h3 id="hoursPracticed">0</h3>
+                            <p>Hours Practiced</p>
+                        </div>
+                        <div class="stat-card">
+                            <h3 id="successRate">0%</h3>
+                            <p>Success Rate</p>
+                        </div>
+                        <div class="stat-card">
+                            <h3 id="daysActive">0</h3>
+                            <p>Days Active</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="script.js"></script>
+    <script src="data/syllabus.js"></script>
+    <script>
+        const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+        
+        if (!currentUser) {
+            alert('Please login first');
+            window.location.href = 'login.html';
+        } else {
+            const firstLetter = currentUser.name.charAt(0).toUpperCase();
+            
+            document.querySelectorAll('.user-avatar').forEach(avatar => {
+                avatar.textContent = firstLetter;
+            });
+            document.querySelector('.sidebar .user-info h3').textContent = currentUser.name;
+            document.querySelector('.sidebar .user-info p').textContent = 'Semester ' + currentUser.semester;
+            
+            document.querySelector('.profile-avatar-large').textContent = firstLetter;
+            document.querySelector('.profile-info h2').textContent = currentUser.name;
+            document.querySelector('.profile-info p:nth-child(2)').textContent = currentUser.email;
+            document.querySelector('.profile-info p:nth-child(3)').textContent = 'UUCMS: ' + currentUser.uucms;
+            
+            document.querySelector('input[type="text"]').value = currentUser.name;
+            document.querySelectorAll('input[type="text"]')[1].value = currentUser.uucms;
+            document.querySelector('input[type="email"]').value = currentUser.email;
+            document.querySelector('input[type="tel"]').value = currentUser.phone || '';
+            document.querySelector('select').value = currentUser.semester;
+            
+            loadStatistics();
+        }
+        
+        function loadStatistics() {
+            if (!currentUser.stats) {
+                currentUser.stats = {
+                    problemsSolved: 0,
+                    totalProblems: 0,
+                    practiceTime: 0,
+                    registeredDate: new Date().toISOString()
+                };
+            }
+            if (!currentUser.stats.registeredDate) {
+                currentUser.stats.registeredDate = new Date().toISOString();
+                localStorage.setItem('currentUser', JSON.stringify(currentUser));
+            }
+
+            const solvedData = JSON.parse(localStorage.getItem('solvedProblems') || '{}');
+            const totalSolved = Object.keys(solvedData).length;
+
+            const registeredDate = new Date(currentUser.stats.registeredDate);
+            const today = new Date();
+            const daysActive = Math.max(1, Math.floor((today - registeredDate) / (1000 * 60 * 60 * 24)) + 1);
+
+            const practiceMinutes = currentUser.stats.practiceTime || 0;
+            const hoursDisplay = practiceMinutes < 60
+                ? practiceMinutes + ' min'
+                : Math.floor(practiceMinutes / 60) + 'h ' + (practiceMinutes % 60) + 'min';
+
+            // success rate: solved out of total syllabus problems
+            let totalAll = 0;
+            if (typeof syllabus !== 'undefined') {
+                for (let semKey in syllabus) {
+                    syllabus[semKey].subjects.forEach(s => { totalAll += s.problems.length; });
+                }
+            }
+            const successRate = totalAll > 0 ? Math.round((totalSolved / totalAll) * 100) : 0;
+            document.getElementById('hoursPracticed').textContent = hoursDisplay;
+            document.getElementById('successRate').textContent = successRate + '%';
+            document.getElementById('daysActive').textContent = daysActive;
+        }
+        
+        document.querySelector('.profile-form').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const updatedName = document.querySelector('input[type="text"]').value;
+            const updatedEmail = document.querySelector('input[type="email"]').value;
+            const updatedPhone = document.querySelector('input[type="tel"]').value;
+            const updatedSemester = document.querySelector('select').value;
+            const btn = this.querySelector('button[type="submit"]');
+            btn.disabled = true;
+            btn.textContent = 'Saving...';
+
+            // Sync with backend
+            const token = localStorage.getItem('authToken');
+            if (token) {
+                try {
+                    const res = await fetch('https://campuscode-production.up.railway.app/api/users/profile', {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+                        body: JSON.stringify({ name: updatedName, email: updatedEmail, semester: parseInt(updatedSemester) })
+                    });
+                    const data = await res.json();
+                    if (res.ok && data.user) {
+                        // Update localStorage with server response
+                        const user = JSON.parse(localStorage.getItem('currentUser'));
+                        Object.assign(user, data.user, { phone: updatedPhone });
+                        localStorage.setItem('currentUser', JSON.stringify(user));
+                    }
+                } catch (e) { /* fail gracefully, still save locally */ }
+            }
+
+            // Always update localStorage
+            currentUser.name = updatedName;
+            currentUser.email = updatedEmail;
+            currentUser.phone = updatedPhone;
+            currentUser.semester = parseInt(updatedSemester);
+            localStorage.setItem('currentUser', JSON.stringify(currentUser));
+
+            btn.disabled = false;
+            btn.textContent = 'Save Changes';
+            alert('Profile updated successfully!');
+            location.reload();
+        });
+        
+        document.getElementById('logoutLink').addEventListener('click', function(e) {
+            e.preventDefault();
+            localStorage.removeItem('currentUser');
+            alert('Logged out successfully!');
+            window.location.href = 'index.html';
+        });
+    </script>
+</body>
+</html>
