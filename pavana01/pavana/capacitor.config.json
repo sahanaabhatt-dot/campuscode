@@ -4,7 +4,6 @@
   "webDir": "www",
   "server": {
     "androidScheme": "https",
-    "url": "https://campuscode-production.up.railway.app",
     "cleartext": true
   }
 }

@@ -46,6 +46,12 @@ app.post('/api/contact', (req, res) => {
     res.json({ message: 'Message received. Thank you!' });
 });
 
+// Serve APK download
+app.get('/download', (req, res) => {
+    const apkPath = path.join(__dirname, 'campuscode.apk');
+    res.download(apkPath, 'CampusCode.apk');
+});
+
 app.get('/api/health', (req, res) => {
     res.json({ status: 'Server is running', timestamp: new Date() });
 });
