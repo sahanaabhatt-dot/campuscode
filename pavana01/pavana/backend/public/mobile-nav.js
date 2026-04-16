@@ -61,6 +61,9 @@
             <a href="profile.html" class="mobile-nav-item ${currentPage === 'profile.html' ? 'active' : ''}">
                 <span class="nav-icon">👤</span><span>Profile</span>
             </a>
+            <a href="#" class="mobile-nav-item" onclick="event.preventDefault();localStorage.removeItem('currentUser');localStorage.removeItem('authToken');window.location.href='login.html';">
+                <span class="nav-icon">🚪</span><span>Logout</span>
+            </a>
         </div>
     `;
 
