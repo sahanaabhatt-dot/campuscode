@@ -248,7 +248,14 @@
                     localStorage.setItem('authToken', data.token);
                     const newUser = { ...data.user, stats: { problemsSolved: 0, practiceTime: 0, registeredDate: new Date().toISOString() } };
                     localStorage.setItem('currentUser', JSON.stringify(newUser));
-                    
+
+                    // Save UUCMS to device-local list for login suggestions
+                    const deviceUsers = JSON.parse(localStorage.getItem('deviceRegisteredUsers') || '[]');
+                    if (!deviceUsers.find(u => u.uucms === uucmsNumber)) {
+                        deviceUsers.push({ uucms: uucmsNumber, name: fullName });
+                        localStorage.setItem('deviceRegisteredUsers', JSON.stringify(deviceUsers));
+                    }
+
                     alert('Registration successful! Welcome to CampusCode, ' + fullName);
                     window.location.href = 'dashboard.html';
                 } else {
