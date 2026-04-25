@@ -149,7 +149,7 @@ router.post('/forgot-password', async (req, res) => {
             }
         });
 
-        const resetUrl = `http://localhost:3000/reset-password?token=${resetToken}`;
+        const resetUrl = `https://campuscode-production.up.railway.app/reset-password.html?token=${resetToken}`;
         
         await transporter.sendMail({
             from: process.env.EMAIL_USER,
