@@ -172,6 +172,39 @@ router.post('/forgot-password', async (req, res) => {
     }
 });
 
+// Reset Password
+router.post('/reset-password', async (req, res) => {
+    const db = req.app.locals.db;
+
+    try {
+        const { token, password } = req.body;
+        const hashedToken = crypto.createHash('sha256').update(token).digest('hex');
+
+        const [users] = await db.query(
+            'SELECT * FROM users WHERE reset_password_token = ? AND reset_password_expires > NOW()',
+            [hashedToken]
+        );
+
+        if (users.length === 0) {
+            return res.status(400).json({ message: 'Reset link is invalid or has expired' });
+        }
+
+        const user = users[0];
+        const salt = await bcrypt.genSalt(10);
+        const hashedPassword = await bcrypt.hash(password, salt);
+
+        await db.query(
+            'UPDATE users SET password = ?, reset_password_token = NULL, reset_password_expires = NULL WHERE id = ?',
+            [hashedPassword, user.id]
+        );
+
+        res.json({ message: 'Password reset successful' });
+    } catch (error) {
+        console.error('Reset password error:', error);
+        res.status(500).json({ message: 'Error resetting password' });
+    }
+});
+
 // Get registered users (for autocomplete)
 router.get('/registered-users', async (req, res) => {
     const db = req.app.locals.db;
