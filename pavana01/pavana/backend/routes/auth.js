@@ -2,8 +2,8 @@ const express = require('express');
 const router = express.Router();
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
-const nodemailer = require('nodemailer');
 const crypto = require('crypto');
+const { Resend } = require('resend');
 
 // Register
 router.post('/register', async (req, res) => {
@@ -140,33 +140,22 @@ router.post('/forgot-password', async (req, res) => {
             [hashedToken, expires, user.id]
         );
 
-        // Send email
-        const transporter = nodemailer.createTransport({
-            host: 'smtp.gmail.com',
-            port: 465,
-            secure: true,
-            auth: {
-                user: process.env.EMAIL_USER,
-                pass: process.env.EMAIL_PASS
-            },
-            tls: {
-                rejectUnauthorized: false
-            }
-        });
-
+        // Send email via Resend
+        const resend = new Resend(process.env.RESEND_API_KEY);
         const resetUrl = `https://campuscode-production.up.railway.app/reset-password.html?token=${resetToken}`;
-        
-        await transporter.sendMail({
-            from: process.env.EMAIL_USER,
+
+        await resend.emails.send({
+            from: 'CampusCode <onboarding@resend.dev>',
             to: user.email,
             subject: 'Password Reset - CampusCode',
             html: `
                 <h2>Password Reset Request</h2>
                 <p>Hi ${user.name},</p>
-                <p>You requested to reset your password. Click the link below to reset:</p>
-                <a href="${resetUrl}">${resetUrl}</a>
-                <p>This link will expire in 1 hour.</p>
-                <p>If you didn't request this, please ignore this email.</p>
+                <p>You requested to reset your password. Click the link below:</p>
+                <a href="${resetUrl}" style="background:#6c63ff;color:white;padding:10px 20px;border-radius:5px;text-decoration:none;">Reset Password</a>
+                <p style="margin-top:15px;">Or copy this link: ${resetUrl}</p>
+                <p>This link expires in 1 hour.</p>
+                <p>If you didn't request this, ignore this email.</p>
             `
         });
 
