@@ -8,6 +8,7 @@ CREATE TABLE IF NOT EXISTS users (
     name VARCHAR(255) NOT NULL,
     uucms VARCHAR(20) NOT NULL UNIQUE,
     email VARCHAR(255) NOT NULL UNIQUE,
+    phone VARCHAR(20),
     password VARCHAR(255) NOT NULL,
     semester INT NOT NULL CHECK (semester BETWEEN 1 AND 6),
     reset_password_token VARCHAR(255),

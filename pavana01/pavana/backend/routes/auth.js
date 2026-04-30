@@ -4,6 +4,54 @@ const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const crypto = require('crypto');
 const { Resend } = require('resend');
+const nodemailer = require('nodemailer');
+
+// Send reset email — tries Resend first, falls back to Nodemailer (Gmail)
+async function sendResetEmail(toEmail, toName, resetUrl) {
+    // Try Resend if API key is configured
+    const resendKey = process.env.RESEND_API_KEY;
+    if (resendKey && resendKey !== 'your_resend_api_key_here') {
+        const resend = new Resend(resendKey);
+        const { data, error } = await resend.emails.send({
+            from: 'CampusCode <onboarding@resend.dev>',
+            to: toEmail,
+            subject: 'Password Reset - CampusCode',
+            html: buildResetEmailHtml(toName, resetUrl)
+        });
+        if (error) throw new Error('Resend error: ' + JSON.stringify(error));
+        return 'resend';
+    }
+
+    // Fallback: Nodemailer via Gmail
+    const emailUser = process.env.EMAIL_USER;
+    const emailPass = process.env.EMAIL_PASS;
+    if (!emailUser || emailUser === 'your_email@gmail.com') {
+        throw new Error('No email service configured. Set RESEND_API_KEY or EMAIL_USER/EMAIL_PASS in .env');
+    }
+    const transporter = nodemailer.createTransport({
+        service: 'gmail',
+        auth: { user: emailUser, pass: emailPass }
+    });
+    await transporter.sendMail({
+        from: `"CampusCode" <${emailUser}>`,
+        to: toEmail,
+        subject: 'Password Reset - CampusCode',
+        html: buildResetEmailHtml(toName, resetUrl)
+    });
+    return 'nodemailer';
+}
+
+function buildResetEmailHtml(name, resetUrl) {
+    return `
+        <h2>Password Reset Request</h2>
+        <p>Hi ${name},</p>
+        <p>You requested to reset your password. Click the link below:</p>
+        <a href="${resetUrl}" style="background:#6c63ff;color:white;padding:10px 20px;border-radius:5px;text-decoration:none;">Reset Password</a>
+        <p style="margin-top:15px;">Or copy this link: ${resetUrl}</p>
+        <p>This link expires in 1 hour.</p>
+        <p>If you didn't request this, ignore this email.</p>
+    `;
+}
 
 // Register
 router.post('/register', async (req, res) => {
@@ -140,24 +188,12 @@ router.post('/forgot-password', async (req, res) => {
             [hashedToken, expires, user.id]
         );
 
-        // Send email via Resend
-        const resend = new Resend(process.env.RESEND_API_KEY);
-        const resetUrl = `https://campuscode-production.up.railway.app/reset-password.html?token=${resetToken}`;
+        // Send email
+        const baseUrl = process.env.APP_URL || 'http://localhost:5000';
+        const resetUrl = `${baseUrl}/reset-password.html?token=${resetToken}`;
 
-        await resend.emails.send({
-            from: 'CampusCode <onboarding@resend.dev>',
-            to: user.email,
-            subject: 'Password Reset - CampusCode',
-            html: `
-                <h2>Password Reset Request</h2>
-                <p>Hi ${user.name},</p>
-                <p>You requested to reset your password. Click the link below:</p>
-                <a href="${resetUrl}" style="background:#6c63ff;color:white;padding:10px 20px;border-radius:5px;text-decoration:none;">Reset Password</a>
-                <p style="margin-top:15px;">Or copy this link: ${resetUrl}</p>
-                <p>This link expires in 1 hour.</p>
-                <p>If you didn't request this, ignore this email.</p>
-            `
-        });
+        const method = await sendResetEmail(user.email, user.name, resetUrl);
+        console.log(`Password reset email sent via ${method} to ${user.email}`);
 
         res.json({ message: 'Password reset link sent to your email' });
     } catch (error) {

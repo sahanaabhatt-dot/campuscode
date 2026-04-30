@@ -199,7 +199,7 @@
         let selectedSubject = null;
         let currentIndex = 0;
         let submissions = JSON.parse(localStorage.getItem('submissions') || '[]');
-        const COMPILER_URL = 'https://campuscode-production.up.railway.app/api/compiler/run';
+        const COMPILER_URL = '/api/compiler/run';
 
         // ── Practice Time Tracking ─────────────────────────────
         let activeSeconds = 0;
@@ -240,91 +240,6 @@
         // ──────────────────────────────────────────────────────
 
         // ── Timer ──────────────────────────────────────────────
-        const TIMER_LIMITS = { easy: 3 * 60, medium: 6 * 60, hard: 10 * 60 };
-        let timerSeconds = 3 * 60;
-        let timerInterval = null;
-
-        function startTimer(difficulty) {
-            timerSeconds = TIMER_LIMITS[difficulty] || 6 * 60;
-            clearInterval(timerInterval);
-            updateTimerDisplay();
-            timerInterval = setInterval(() => {
-                timerSeconds--;
-                updateTimerDisplay();
-                if (timerSeconds <= 0) {
-                    clearInterval(timerInterval);
-                    onTimerEnd();
-                }
-            }, 1000);
-        }
-
-        function updateTimerDisplay() {
-            const mins = Math.floor(timerSeconds / 60);
-            const secs = timerSeconds % 60;
-            const display = `${String(mins).padStart(2,'0')}:${String(secs).padStart(2,'0')}`;
-            const box = document.getElementById('timerBox');
-            box.textContent = display;
-            box.className = 'timer-box';
-            const total = timerSeconds;
-            if (total <= 30)       box.classList.add('danger');
-            else if (total <= 60)  box.classList.add('warning');
-        }
-
-        function onTimerEnd() {
-            document.getElementById('timerBox').textContent = '⏱ 00:00';
-            document.getElementById('timerBox').className = 'timer-box danger';
-            document.getElementById('timerModal').classList.add('show');
-        }
-
-        function closeTimerModal() {
-            document.getElementById('timerModal').classList.remove('show');
-        }
-        // ──────────────────────────────────────────────────────
-
-        // Track practice time — only count active coding time
-        let activeSeconds = 0;
-        let lastActivityTime = null;
-        const IDLE_THRESHOLD = 30000; // 30 seconds idle = stop counting
-
-        function onUserActivity() {
-            const now = Date.now();
-            if (lastActivityTime) {
-                const gap = now - lastActivityTime;
-                if (gap < IDLE_THRESHOLD) {
-                    activeSeconds += gap / 1000;
-                }
-            }
-            lastActivityTime = now;
-        }
-
-        function savePracticeTime() {
-            const user = JSON.parse(localStorage.getItem('currentUser'));
-            if (!user) return;
-            if (!user.stats) user.stats = { problemsSolved: 0, practiceTime: 0, registeredDate: new Date().toISOString() };
-            const newMinutes = Math.floor(activeSeconds / 60);
-            if (newMinutes > 0) {
-                user.stats.practiceTime = (user.stats.practiceTime || 0) + newMinutes;
-                localStorage.setItem('currentUser', JSON.stringify(user));
-                activeSeconds -= newMinutes * 60; // keep remainder seconds
-            }
-        }
-
-        // Track activity on code editor interactions
-        document.addEventListener('DOMContentLoaded', function() {
-            const editor = document.getElementById('codeEditor');
-            if (editor) {
-                editor.addEventListener('keydown', onUserActivity);
-                editor.addEventListener('click', onUserActivity);
-                editor.addEventListener('input', onUserActivity);
-            }
-            document.getElementById('runBtn')?.addEventListener('click', onUserActivity);
-            document.getElementById('submitBtn')?.addEventListener('click', onUserActivity);
-        });
-
-        window.addEventListener('beforeunload', savePracticeTime);
-        setInterval(savePracticeTime, 30000);
-
-        document.addEventListener('DOMContentLoaded', function() {
             const params = new URLSearchParams(window.location.search);
             const subjectId = params.get('subject');
             currentIndex = parseInt(params.get('q') || '0');
@@ -420,7 +335,7 @@
 
                 let verdict;
                 try {
-                    const vRes = await fetch('https://campuscode-production.up.railway.app/api/compiler/verdict', {
+                    const vRes = await fetch('/api/compiler/verdict', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({

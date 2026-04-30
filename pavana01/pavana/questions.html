@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -199,7 +199,7 @@
         let selectedSubject = null;
         let currentIndex = 0;
         let submissions = JSON.parse(localStorage.getItem('submissions') || '[]');
-        const COMPILER_URL = 'https://campuscode-production.up.railway.app/api/compiler/run';
+        const COMPILER_URL = '/api/compiler/run';
 
         // ── Practice Time Tracking ─────────────────────────────
         let activeSeconds = 0;
@@ -420,7 +420,7 @@
 
                 let verdict;
                 try {
-                    const vRes = await fetch('https://campuscode-production.up.railway.app/api/compiler/verdict', {
+                    const vRes = await fetch('/api/compiler/verdict', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({

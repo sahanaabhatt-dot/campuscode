@@ -234,7 +234,7 @@
             const token = localStorage.getItem('authToken');
             if (token) {
                 try {
-                    const res = await fetch('https://campuscode-production.up.railway.app/api/users/profile', {
+                    const res = await fetch('/api/users/profile', {
                         method: 'PUT',
                         headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
                         body: JSON.stringify({ name: updatedName, email: updatedEmail, semester: parseInt(updatedSemester) })

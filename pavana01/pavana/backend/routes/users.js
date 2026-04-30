@@ -25,7 +25,7 @@ router.get('/profile', authMiddleware, async (req, res) => {
     
     try {
         const [users] = await db.query(
-            'SELECT id, name, uucms, email, semester, created_at FROM users WHERE id = ?',
+            'SELECT id, name, uucms, email, phone, semester, created_at FROM users WHERE id = ?',
             [req.userId]
         );
         
@@ -44,7 +44,7 @@ router.put('/profile', authMiddleware, async (req, res) => {
     const db = req.app.locals.db;
     
     try {
-        const { name, email, semester } = req.body;
+        const { name, email, phone, semester } = req.body;
         
         const [users] = await db.query('SELECT * FROM users WHERE id = ?', [req.userId]);
         
@@ -55,17 +55,18 @@ router.put('/profile', authMiddleware, async (req, res) => {
         const user = users[0];
         
         await db.query(
-            'UPDATE users SET name = ?, email = ?, semester = ? WHERE id = ?',
+            'UPDATE users SET name = ?, email = ?, phone = ?, semester = ? WHERE id = ?',
             [
                 name || user.name,
                 email ? email.toLowerCase() : user.email,
+                phone || user.phone,
                 semester || user.semester,
                 req.userId
             ]
         );
 
         const [updatedUsers] = await db.query(
-            'SELECT id, name, uucms, email, semester FROM users WHERE id = ?',
+            'SELECT id, name, uucms, email, phone, semester FROM users WHERE id = ?',
             [req.userId]
         );
 

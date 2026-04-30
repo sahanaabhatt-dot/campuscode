@@ -147,7 +147,7 @@
     </div>
 
     <script>
-        const COMPILER_URL = 'https://campuscode-production.up.railway.app/api/compiler/run';
+        const COMPILER_URL = '/api/compiler/run';
         let questionData = null;
         let currentIndex = 0;
 
@@ -309,7 +309,7 @@
 
                 let verdict;
                 try {
-                    const vRes = await fetch('https://campuscode-production.up.railway.app/api/compiler/verdict', {
+                    const vRes = await fetch('/api/compiler/verdict', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({

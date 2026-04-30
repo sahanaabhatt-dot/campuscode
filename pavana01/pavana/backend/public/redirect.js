@@ -6,6 +6,6 @@
         var match = full.match(/\/([^\/]+\.html.*)$/);
         var page = match ? '/' + match[1] : '/index.html';
         var search = window.location.search || '';
-        window.location.replace('https://campuscode-production.up.railway.app' + page + search);
+        window.location.replace('http://localhost:5000' + page + search);
     }
 })();
