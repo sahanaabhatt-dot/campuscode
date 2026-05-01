@@ -6,26 +6,21 @@ const crypto = require('crypto');
 const { Resend } = require('resend');
 const nodemailer = require('nodemailer');
 
-// Send reset email via Nodemailer (Gmail port 465)
+// Send reset email via Resend (works on Railway - uses HTTPS not SMTP)
 async function sendResetEmail(toEmail, toName, resetUrl) {
-    const emailUser = process.env.EMAIL_USER;
-    const emailPass = process.env.EMAIL_PASS;
-    if (!emailUser || emailUser === 'your_email@gmail.com') {
-        throw new Error('No email service configured. Set EMAIL_USER/EMAIL_PASS in environment variables.');
+    const resendKey = process.env.RESEND_API_KEY;
+    if (!resendKey || resendKey === 'your_resend_api_key_here') {
+        throw new Error('RESEND_API_KEY not configured.');
     }
-    const transporter = nodemailer.createTransport({
-        host: 'smtp.gmail.com',
-        port: 465,
-        secure: true,
-        auth: { user: emailUser, pass: emailPass }
-    });
-    await transporter.sendMail({
-        from: `"CampusCode" <${emailUser}>`,
+    const resend = new Resend(resendKey);
+    const { data, error } = await resend.emails.send({
+        from: 'CampusCode <onboarding@resend.dev>',
         to: toEmail,
         subject: 'Password Reset - CampusCode',
         html: buildResetEmailHtml(toName, resetUrl)
     });
-    return 'nodemailer';
+    if (error) throw new Error('Resend error: ' + JSON.stringify(error));
+    return 'resend';
 }
 
 function buildResetEmailHtml(name, resetUrl) {
