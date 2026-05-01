@@ -3,7 +3,7 @@
   "appName": "CampusCode",
   "webDir": "www",
   "server": {
-    "androidScheme": "https",
-    "cleartext": true
+    "url": "https://campuscode-production.up.railway.app",
+    "cleartext": false
   }
 }
