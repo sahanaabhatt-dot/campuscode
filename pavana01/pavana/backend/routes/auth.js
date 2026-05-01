@@ -13,9 +13,12 @@ async function sendResetEmail(toEmail, toName, resetUrl) {
         throw new Error('RESEND_API_KEY not configured.');
     }
     const resend = new Resend(resendKey);
+    // Resend free plan only allows sending to the account owner's email
+    // Use the EMAIL_USER as the verified recipient
+    const verifiedEmail = process.env.EMAIL_USER;
     const { data, error } = await resend.emails.send({
         from: 'CampusCode <onboarding@resend.dev>',
-        to: toEmail,
+        to: verifiedEmail,
         subject: 'Password Reset - CampusCode',
         html: buildResetEmailHtml(toName, resetUrl)
     });
