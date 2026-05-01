@@ -6,30 +6,17 @@ const crypto = require('crypto');
 const { Resend } = require('resend');
 const nodemailer = require('nodemailer');
 
-// Send reset email — tries Resend first, falls back to Nodemailer (Gmail)
+// Send reset email via Nodemailer (Gmail port 465)
 async function sendResetEmail(toEmail, toName, resetUrl) {
-    // Try Resend if API key is configured
-    const resendKey = process.env.RESEND_API_KEY;
-    if (resendKey && resendKey !== 'your_resend_api_key_here') {
-        const resend = new Resend(resendKey);
-        const { data, error } = await resend.emails.send({
-            from: 'CampusCode <onboarding@resend.dev>',
-            to: toEmail,
-            subject: 'Password Reset - CampusCode',
-            html: buildResetEmailHtml(toName, resetUrl)
-        });
-        if (error) throw new Error('Resend error: ' + JSON.stringify(error));
-        return 'resend';
-    }
-
-    // Fallback: Nodemailer via Gmail
     const emailUser = process.env.EMAIL_USER;
     const emailPass = process.env.EMAIL_PASS;
     if (!emailUser || emailUser === 'your_email@gmail.com') {
-        throw new Error('No email service configured. Set RESEND_API_KEY or EMAIL_USER/EMAIL_PASS in .env');
+        throw new Error('No email service configured. Set EMAIL_USER/EMAIL_PASS in environment variables.');
     }
     const transporter = nodemailer.createTransport({
-        service: 'gmail',
+        host: 'smtp.gmail.com',
+        port: 465,
+        secure: true,
         auth: { user: emailUser, pass: emailPass }
     });
     await transporter.sendMail({
