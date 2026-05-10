@@ -240,6 +240,48 @@
         // ──────────────────────────────────────────────────────
 
         // ── Timer ──────────────────────────────────────────────
+        const TIMER_LIMITS = { easy: 3 * 60, medium: 6 * 60, hard: 10 * 60 };
+        let timerSeconds = 3 * 60;
+        let timerInterval = null;
+
+        function startTimer(difficulty) {
+            timerSeconds = TIMER_LIMITS[difficulty] || 6 * 60;
+            clearInterval(timerInterval);
+            updateTimerDisplay();
+            timerInterval = setInterval(() => {
+                timerSeconds--;
+                updateTimerDisplay();
+                if (timerSeconds <= 0) {
+                    clearInterval(timerInterval);
+                    onTimerEnd();
+                }
+            }, 1000);
+        }
+
+        function updateTimerDisplay() {
+            const mins = Math.floor(timerSeconds / 60);
+            const secs = timerSeconds % 60;
+            const display = `${String(mins).padStart(2,'0')}:${String(secs).padStart(2,'0')}`;
+            const box = document.getElementById('timerBox');
+            box.textContent = display;
+            box.className = 'timer-box';
+            const total = timerSeconds;
+            if (total <= 30)       box.classList.add('danger');
+            else if (total <= 60)  box.classList.add('warning');
+        }
+
+        function onTimerEnd() {
+            document.getElementById('timerBox').textContent = '⏱ 00:00';
+            document.getElementById('timerBox').className = 'timer-box danger';
+            document.getElementById('timerModal').classList.add('show');
+        }
+
+        function closeTimerModal() {
+            document.getElementById('timerModal').classList.remove('show');
+        }
+        // ──────────────────────────────────────────────────────
+
+        document.addEventListener('DOMContentLoaded', function() {
             const params = new URLSearchParams(window.location.search);
             const subjectId = params.get('subject');
             currentIndex = parseInt(params.get('q') || '0');

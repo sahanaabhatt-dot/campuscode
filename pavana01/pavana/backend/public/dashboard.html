@@ -340,7 +340,7 @@
         document.querySelector('#logoutLink').addEventListener('click', function(e) {
             e.preventDefault();
             localStorage.removeItem('currentUser');
-            alert('Logged out successfully!');
+            localStorage.removeItem('authToken');
             window.location.href = 'index.html';
         });
 
@@ -415,12 +415,35 @@
             }
         }
 
-        function saveSettings() {
+        async function saveSettings() {
             const user = JSON.parse(localStorage.getItem('currentUser'));
-            user.name = document.getElementById('settingName').value;
-            user.email = document.getElementById('settingEmail').value;
-            user.semester = parseInt(document.getElementById('settingSemester').value);
+            const updatedName = document.getElementById('settingName').value.trim();
+            const updatedEmail = document.getElementById('settingEmail').value.trim();
+            const updatedSemester = parseInt(document.getElementById('settingSemester').value);
+            const btn = document.querySelector('#sectionSettings .primary-btn');
+            if (btn) { btn.disabled = true; btn.textContent = 'Saving...'; }
+
+            // Sync with backend
+            const token = localStorage.getItem('authToken');
+            if (token) {
+                try {
+                    const res = await fetch('/api/users/profile', {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+                        body: JSON.stringify({ name: updatedName, email: updatedEmail, semester: updatedSemester })
+                    });
+                    const data = await res.json();
+                    if (res.ok && data.user) {
+                        Object.assign(user, data.user);
+                    }
+                } catch (e) { /* fail gracefully */ }
+            }
+
+            user.name = updatedName;
+            user.email = updatedEmail;
+            user.semester = updatedSemester;
             localStorage.setItem('currentUser', JSON.stringify(user));
+            if (btn) { btn.disabled = false; btn.textContent = 'Save Changes'; }
             alert('Settings saved successfully!');
             location.reload();
         }
