@@ -19,23 +19,93 @@ app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
-const pool = mysql.createPool({
-    host: process.env.DB_HOST || 'localhost',
-    port: parseInt(process.env.DB_PORT) || 3306,
-    user: process.env.DB_USER || 'root',
-    password: process.env.DB_PASSWORD || '',
-    database: process.env.DB_NAME || 'campuscode',
-    waitForConnections: true,
-    connectionLimit: 10,
-    queueLimit: 0
-});
+// ── Database: PostgreSQL (Render) or MySQL (local) ────────────────────────
+let pool;
 
-pool.getConnection()
-    .then(connection => {
-        console.log('MySQL connected successfully');
-        connection.release();
-    })
-    .catch(err => console.error('MySQL connection error:', err));
+if (process.env.DATABASE_URL) {
+    // PostgreSQL on Render
+    const { Pool } = require('pg');
+    const pgPool = new Pool({
+        connectionString: process.env.DATABASE_URL,
+        ssl: { rejectUnauthorized: false }
+    });
+
+    // Wrap pg pool to match mysql2 interface used throughout the app
+    pool = {
+        query: async (sql, params = []) => {
+            // Convert MySQL ? placeholders to PostgreSQL $1, $2...
+            let i = 0;
+            const pgSql = sql.replace(/\?/g, () => `$${++i}`);
+            const result = await pgPool.query(pgSql, params);
+            return [result.rows, result.fields];
+        },
+        getConnection: async () => {
+            const client = await pgPool.connect();
+            return { release: () => client.release() };
+        }
+    };
+
+    pgPool.query('SELECT 1')
+        .then(() => console.log('PostgreSQL connected successfully'))
+        .catch(err => console.error('PostgreSQL connection error:', err));
+
+    // Auto-create tables if not exist
+    pgPool.query(`
+        CREATE TABLE IF NOT EXISTS users (
+            id SERIAL PRIMARY KEY,
+            name VARCHAR(255) NOT NULL,
+            uucms VARCHAR(20) NOT NULL UNIQUE,
+            email VARCHAR(255) NOT NULL UNIQUE,
+            phone VARCHAR(20),
+            password VARCHAR(255) NOT NULL,
+            semester INT NOT NULL CHECK (semester BETWEEN 1 AND 6),
+            reset_password_token VARCHAR(255),
+            reset_password_expires TIMESTAMP,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        );
+        CREATE TABLE IF NOT EXISTS problems (
+            id SERIAL PRIMARY KEY,
+            title VARCHAR(255) NOT NULL,
+            description TEXT NOT NULL,
+            difficulty VARCHAR(10) NOT NULL,
+            semester INT NOT NULL,
+            subject VARCHAR(100) NOT NULL,
+            test_cases JSONB,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        );
+        CREATE TABLE IF NOT EXISTS submissions (
+            id SERIAL PRIMARY KEY,
+            user_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+            problem_id INT NOT NULL REFERENCES problems(id) ON DELETE CASCADE,
+            code TEXT NOT NULL,
+            language VARCHAR(50) NOT NULL,
+            status VARCHAR(20) NOT NULL,
+            submitted_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        );
+    `).then(() => console.log('PostgreSQL tables ready'))
+      .catch(err => console.error('Table creation error:', err));
+
+} else {
+    // MySQL for local development
+    pool = mysql.createPool({
+        host: process.env.DB_HOST || 'localhost',
+        port: parseInt(process.env.DB_PORT) || 3306,
+        user: process.env.DB_USER || 'root',
+        password: process.env.DB_PASSWORD || '',
+        database: process.env.DB_NAME || 'campuscode',
+        waitForConnections: true,
+        connectionLimit: 10,
+        queueLimit: 0
+    });
+
+    pool.getConnection()
+        .then(connection => {
+            console.log('MySQL connected successfully');
+            connection.release();
+        })
+        .catch(err => console.error('MySQL connection error:', err));
+}
 
 app.locals.db = pool;
 
