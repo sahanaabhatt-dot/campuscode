@@ -180,9 +180,9 @@ router.post('/forgot-password', async (req, res) => {
         const baseUrl = process.env.APP_URL || 'http://localhost:5000';
         const resetUrl = `${baseUrl}/reset-password.html?token=${resetToken}`;
 
-        res.json({ message: 'Password reset link sent to your email' });
+        res.json({ message: 'Password reset link sent to your email', resetUrl });
 
-        // Send email after responding
+        // Also try to send email in background
         sendResetEmail(user.email, user.name, resetUrl)
             .then(method => console.log(`Reset email sent via ${method} to ${user.email}`))
             .catch(err => console.error('Email send FAILED:', err.message, err.stack));
