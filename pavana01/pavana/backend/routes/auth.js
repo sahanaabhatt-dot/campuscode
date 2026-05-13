@@ -3,27 +3,30 @@ const router = express.Router();
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const crypto = require('crypto');
-const { Resend } = require('resend');
 const nodemailer = require('nodemailer');
 
-// Send reset email via Resend (works on Railway - uses HTTPS not SMTP)
+// Send reset email via Gmail SMTP (works for any recipient)
 async function sendResetEmail(toEmail, toName, resetUrl) {
-    const resendKey = process.env.RESEND_API_KEY;
-    if (!resendKey || resendKey === 'your_resend_api_key_here') {
-        throw new Error('RESEND_API_KEY not configured.');
+    const gmailUser = process.env.EMAIL_USER;
+    const gmailPass = process.env.EMAIL_PASS;
+
+    if (!gmailUser || !gmailPass) {
+        throw new Error('EMAIL_USER or EMAIL_PASS not configured in .env');
     }
-    const resend = new Resend(resendKey);
-    // Resend free plan only allows sending to the account owner's email
-    // Use the EMAIL_USER as the verified recipient
-    const verifiedEmail = process.env.EMAIL_USER;
-    const { data, error } = await resend.emails.send({
-        from: 'CampusCode <onboarding@resend.dev>',
-        to: verifiedEmail,
+
+    const transporter = nodemailer.createTransport({
+        service: 'gmail',
+        auth: { user: gmailUser, pass: gmailPass }
+    });
+
+    await transporter.sendMail({
+        from: `"CampusCode" <${gmailUser}>`,
+        to: toEmail,
         subject: 'Password Reset - CampusCode',
         html: buildResetEmailHtml(toName, resetUrl)
     });
-    if (error) throw new Error('Resend error: ' + JSON.stringify(error));
-    return 'resend';
+
+    return 'gmail';
 }
 
 function buildResetEmailHtml(name, resetUrl) {

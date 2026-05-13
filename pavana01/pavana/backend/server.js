@@ -72,5 +72,17 @@ const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
     console.log(`Open your app at: http://localhost:${PORT}/index.html`);
+
+    // ── Keep-alive ping every 4 minutes to prevent Railway from sleeping ──
+    const APP_URL = process.env.APP_URL || `http://localhost:${PORT}`;
+    setInterval(async () => {
+        try {
+            const fetch = (...args) => import('node-fetch').then(({ default: f }) => f(...args));
+            await (await fetch(`${APP_URL}/api/health`)).json();
+            console.log('[keep-alive] ping ok');
+        } catch (e) {
+            console.log('[keep-alive] ping failed:', e.message);
+        }
+    }, 4 * 60 * 1000); // every 4 minutes
 });
 
