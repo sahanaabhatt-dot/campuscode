@@ -37,7 +37,16 @@ if (process.env.DATABASE_URL) {
             let i = 0;
             const pgSql = sql.replace(/\?/g, () => `$${++i}`);
             const result = await pgPool.query(pgSql, params);
-            return [result.rows, result.fields];
+            // Return mysql2-compatible format
+            // For INSERT with RETURNING, rows[0] has the returned data
+            // For SELECT, rows is the array of results
+            // Attach insertId for compatibility
+            const rows = result.rows;
+            const meta = {
+                insertId: rows[0]?.id || null,
+                affectedRows: result.rowCount
+            };
+            return [rows, result.fields, meta];
         },
         getConnection: async () => {
             const client = await pgPool.connect();
@@ -143,7 +152,7 @@ app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
     console.log(`Open your app at: http://localhost:${PORT}/index.html`);
 
-    // ── Keep-alive ping every 4 minutes to prevent Railway from sleeping ──
+    // ── Keep-alive ping every 4 minutes to prevent Render/Railway from sleeping ──
     const APP_URL = process.env.APP_URL || `http://localhost:${PORT}`;
     setInterval(async () => {
         try {

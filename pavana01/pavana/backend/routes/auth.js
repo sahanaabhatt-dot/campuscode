@@ -69,13 +69,15 @@ router.post('/register', async (req, res) => {
 
         // Insert new user
         const [result] = await db.query(
-            'INSERT INTO users (name, uucms, email, phone, password, semester) VALUES (?, ?, ?, ?, ?, ?)',
+            'INSERT INTO users (name, uucms, email, phone, password, semester) VALUES (?, ?, ?, ?, ?, ?) RETURNING id',
             [name, uucms.toUpperCase(), email.toLowerCase(), phone, hashedPassword, semester]
         );
 
+        const newId = result[0]?.id || result.insertId;
+
         // Generate JWT token
         const token = jwt.sign(
-            { userId: result.insertId, uucms: uucms.toUpperCase() },
+            { userId: newId, uucms: uucms.toUpperCase() },
             process.env.JWT_SECRET,
             { expiresIn: '7d' }
         );
@@ -84,7 +86,7 @@ router.post('/register', async (req, res) => {
             message: 'Registration successful',
             token,
             user: {
-                id: result.insertId,
+                id: newId,
                 name,
                 uucms: uucms.toUpperCase(),
                 email: email.toLowerCase(),
