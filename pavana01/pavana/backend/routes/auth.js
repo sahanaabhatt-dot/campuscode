@@ -5,7 +5,7 @@ const bcrypt = require('bcryptjs');
 const crypto = require('crypto');
 const nodemailer = require('nodemailer');
 
-// Send reset email via Gmail SMTP (works for any recipient)
+// Send reset email via Gmail SMTP with proper cloud settings
 async function sendResetEmail(toEmail, toName, resetUrl) {
     const gmailUser = process.env.EMAIL_USER;
     const gmailPass = process.env.EMAIL_PASS;
@@ -15,8 +15,14 @@ async function sendResetEmail(toEmail, toName, resetUrl) {
     }
 
     const transporter = nodemailer.createTransport({
-        service: 'gmail',
-        auth: { user: gmailUser, pass: gmailPass }
+        host: 'smtp.gmail.com',
+        port: 465,
+        secure: true,
+        auth: { user: gmailUser, pass: gmailPass },
+        tls: { rejectUnauthorized: false },
+        connectionTimeout: 10000,
+        greetingTimeout: 10000,
+        socketTimeout: 10000
     });
 
     await transporter.sendMail({
@@ -178,14 +184,16 @@ router.post('/forgot-password', async (req, res) => {
             [hashedToken, expires, user.id]
         );
 
-        // Send email
+        // Send email in background — don't block the response
         const baseUrl = process.env.APP_URL || 'http://localhost:5000';
         const resetUrl = `${baseUrl}/reset-password.html?token=${resetToken}`;
 
-        const method = await sendResetEmail(user.email, user.name, resetUrl);
-        console.log(`Password reset email sent via ${method} to ${user.email}`);
-
         res.json({ message: 'Password reset link sent to your email' });
+
+        // Send email after responding
+        sendResetEmail(user.email, user.name, resetUrl)
+            .then(method => console.log(`Reset email sent via ${method} to ${user.email}`))
+            .catch(err => console.error('Email send error:', err.message));
     } catch (error) {
         console.error('Forgot password error:', error);
         res.status(500).json({ message: 'Error sending reset email: ' + error.message });
