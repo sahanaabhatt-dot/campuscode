@@ -5,34 +5,20 @@ const bcrypt = require('bcryptjs');
 const crypto = require('crypto');
 const nodemailer = require('nodemailer');
 
-// Send reset email via Gmail SMTP with proper cloud settings
+// Send reset email via Resend (works from cloud servers)
 async function sendResetEmail(toEmail, toName, resetUrl) {
-    const gmailUser = process.env.EMAIL_USER;
-    const gmailPass = process.env.EMAIL_PASS;
+    const { Resend } = require('resend');
+    const resend = new Resend(process.env.RESEND_API_KEY);
 
-    if (!gmailUser || !gmailPass) {
-        throw new Error('EMAIL_USER or EMAIL_PASS not configured in .env');
-    }
-
-    const transporter = nodemailer.createTransport({
-        host: 'smtp.gmail.com',
-        port: 465,
-        secure: true,
-        auth: { user: gmailUser, pass: gmailPass },
-        tls: { rejectUnauthorized: false },
-        connectionTimeout: 10000,
-        greetingTimeout: 10000,
-        socketTimeout: 10000
-    });
-
-    await transporter.sendMail({
-        from: `"CampusCode" <${gmailUser}>`,
+    const { error } = await resend.emails.send({
+        from: 'CampusCode <onboarding@resend.dev>',
         to: toEmail,
         subject: 'Password Reset - CampusCode',
         html: buildResetEmailHtml(toName, resetUrl)
     });
 
-    return 'gmail';
+    if (error) throw new Error('Resend error: ' + JSON.stringify(error));
+    return 'resend';
 }
 
 function buildResetEmailHtml(name, resetUrl) {
