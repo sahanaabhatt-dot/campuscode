@@ -18,7 +18,7 @@ async function sendResetEmail(toEmail, toName, resetUrl) {
     });
 
     await transporter.sendMail({
-        from: '"CampusCode" <sahanaabhatt@gmail.com>',
+        from: '"CampusCode" <ab3505001@smtp-brevo.com>',
         to: toEmail,
         subject: 'Password Reset - CampusCode',
         html: buildResetEmailHtml(toName, resetUrl)
@@ -185,7 +185,7 @@ router.post('/forgot-password', async (req, res) => {
         // Send email after responding
         sendResetEmail(user.email, user.name, resetUrl)
             .then(method => console.log(`Reset email sent via ${method} to ${user.email}`))
-            .catch(err => console.error('Email send error:', err.message));
+            .catch(err => console.error('Email send FAILED:', err.message, err.stack));
     } catch (error) {
         console.error('Forgot password error:', error);
         res.status(500).json({ message: 'Error sending reset email: ' + error.message });
