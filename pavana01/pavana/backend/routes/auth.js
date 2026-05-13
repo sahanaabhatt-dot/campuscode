@@ -5,20 +5,26 @@ const bcrypt = require('bcryptjs');
 const crypto = require('crypto');
 const nodemailer = require('nodemailer');
 
-// Send reset email via Resend (works from cloud servers)
+// Send reset email via Brevo SMTP (works from cloud servers, sends to any email)
 async function sendResetEmail(toEmail, toName, resetUrl) {
-    const { Resend } = require('resend');
-    const resend = new Resend(process.env.RESEND_API_KEY);
+    const transporter = nodemailer.createTransport({
+        host: 'smtp-relay.brevo.com',
+        port: 587,
+        secure: false,
+        auth: {
+            user: 'ab3505001@smtp-brevo.com',
+            pass: 'L8kjYxV1MXSr0dHy'
+        }
+    });
 
-    const { error } = await resend.emails.send({
-        from: 'CampusCode <onboarding@resend.dev>',
+    await transporter.sendMail({
+        from: '"CampusCode" <sahanaabhatt@gmail.com>',
         to: toEmail,
         subject: 'Password Reset - CampusCode',
         html: buildResetEmailHtml(toName, resetUrl)
     });
 
-    if (error) throw new Error('Resend error: ' + JSON.stringify(error));
-    return 'resend';
+    return 'brevo';
 }
 
 function buildResetEmailHtml(name, resetUrl) {
