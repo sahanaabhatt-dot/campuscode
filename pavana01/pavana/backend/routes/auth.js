@@ -65,13 +65,18 @@ router.post('/register', async (req, res) => {
         const salt = await bcrypt.genSalt(10);
         const hashedPassword = await bcrypt.hash(password, salt);
 
-        // Insert new user
+        // Insert new user — use DATABASE_URL to detect PostgreSQL vs MySQL
+        const isPostgres = !!process.env.DATABASE_URL;
+        const insertSql = isPostgres
+            ? 'INSERT INTO users (name, uucms, email, phone, password, semester) VALUES (?, ?, ?, ?, ?, ?) RETURNING id'
+            : 'INSERT INTO users (name, uucms, email, phone, password, semester) VALUES (?, ?, ?, ?, ?, ?)';
+
         const [result] = await db.query(
-            'INSERT INTO users (name, uucms, email, phone, password, semester) VALUES (?, ?, ?, ?, ?, ?) RETURNING id',
+            insertSql,
             [name, uucms.toUpperCase(), email.toLowerCase(), phone, hashedPassword, semester]
         );
 
-        const newId = result[0]?.id || result.insertId;
+        const newId = isPostgres ? (result[0]?.id || result[0]) : result.insertId;
 
         // Generate JWT token
         const token = jwt.sign(
