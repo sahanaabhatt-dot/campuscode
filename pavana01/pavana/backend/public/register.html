@@ -75,6 +75,23 @@
                 </div>
                 
                 <div class="form-group">
+                    <label>Select Course</label>
+                    <select id="course" required>
+                        <option value="">Choose your course</option>
+                        <option value="BCA">BCA - Bachelor of Computer Applications</option>
+                        <option value="BBA">BBA - Bachelor of Business Administration</option>
+                        <option value="BSC">BSc - Bachelor of Science</option>
+                        <option value="BSC_CS">BSc CS - Bachelor of Science in Computer Science</option>
+                        <option value="BE">BE - Bachelor of Engineering</option>
+                        <option value="BTECH">B.Tech - Bachelor of Technology</option>
+                        <option value="MCA">MCA - Master of Computer Applications</option>
+                        <option value="MBA">MBA - Master of Business Administration</option>
+                        <option value="MSC">MSc - Master of Science</option>
+                        <option value="OTHER">Other</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
                     <label>Select Semester</label>
                     <select id="semester" required>
                         <option value="">Choose your semester</option>
@@ -181,6 +198,14 @@
             const password = document.getElementById('password').value;
             const confirmPassword = document.getElementById('confirmPassword').value;
             const semester = document.getElementById('semester').value;
+            const course = document.getElementById('course').value;
+
+            // Validate course
+            if (!course) {
+                alert('Please select your course');
+                document.getElementById('course').focus();
+                return false;
+            }
             
             // Validate UUCMS format
             const uucmsPattern = /^U[0-9]{2}[A-Z]{2}[0-9]{2}[A-Z][0-9]{4}$/;
@@ -237,7 +262,8 @@
                         email: email,
                         phone: phone,
                         password: password,
-                        semester: parseInt(semester)
+                        semester: parseInt(semester),
+                        course: course
                     })
                 });
                 

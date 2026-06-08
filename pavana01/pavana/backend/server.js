@@ -68,6 +68,7 @@ if (process.env.DATABASE_URL) {
             phone VARCHAR(20),
             password VARCHAR(255) NOT NULL,
             semester INT NOT NULL CHECK (semester BETWEEN 1 AND 6),
+            course VARCHAR(50) DEFAULT 'BCA',
             reset_password_token VARCHAR(255),
             reset_password_expires TIMESTAMP,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,

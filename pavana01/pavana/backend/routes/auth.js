@@ -44,7 +44,7 @@ router.post('/register', async (req, res) => {
     const db = req.app.locals.db;
     
     try {
-        const { name, uucms, email, phone, password, semester } = req.body;
+        const { name, uucms, email, phone, password, semester, course } = req.body;
 
         // Check if user already exists
         const [existingUsers] = await db.query(
@@ -68,12 +68,12 @@ router.post('/register', async (req, res) => {
         // Insert new user — use DATABASE_URL to detect PostgreSQL vs MySQL
         const isPostgres = !!process.env.DATABASE_URL;
         const insertSql = isPostgres
-            ? 'INSERT INTO users (name, uucms, email, phone, password, semester) VALUES (?, ?, ?, ?, ?, ?) RETURNING id'
-            : 'INSERT INTO users (name, uucms, email, phone, password, semester) VALUES (?, ?, ?, ?, ?, ?)';
+            ? 'INSERT INTO users (name, uucms, email, phone, password, semester, course) VALUES (?, ?, ?, ?, ?, ?, ?) RETURNING id'
+            : 'INSERT INTO users (name, uucms, email, phone, password, semester, course) VALUES (?, ?, ?, ?, ?, ?, ?)';
 
         const [result] = await db.query(
             insertSql,
-            [name, uucms.toUpperCase(), email.toLowerCase(), phone, hashedPassword, semester]
+            [name, uucms.toUpperCase(), email.toLowerCase(), phone, hashedPassword, semester, course || 'BCA']
         );
 
         const newId = isPostgres ? (result[0]?.id || result[0]) : result.insertId;
@@ -94,7 +94,8 @@ router.post('/register', async (req, res) => {
                 uucms: uucms.toUpperCase(),
                 email: email.toLowerCase(),
                 phone,
-                semester
+                semester,
+                course: course || 'BCA'
             }
         });
     } catch (error) {
