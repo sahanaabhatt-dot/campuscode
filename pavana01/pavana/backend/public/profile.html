@@ -79,7 +79,7 @@
                         
                         <div class="form-group">
                             <label>Current Semester</label>
-                            <select required>
+                            <select id="semesterSelect" required>
                                 <option value="1">Semester 1</option>
                                 <option value="2">Semester 2</option>
                                 <option value="3" selected>Semester 3</option>
@@ -90,9 +90,27 @@
                         </div>
                     </div>
 
-                    <div class="form-group">
-                        <label>Phone Number</label>
-                        <input type="tel" placeholder="+91 1234567890">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Course</label>
+                            <select id="courseSelect">
+                                <option value="BCA">BCA - Bachelor of Computer Applications</option>
+                                <option value="BBA">BBA - Bachelor of Business Administration</option>
+                                <option value="BSC">BSc - Bachelor of Science</option>
+                                <option value="BSC_CS">BSc CS - Bachelor of Science in Computer Science</option>
+                                <option value="BE">BE - Bachelor of Engineering</option>
+                                <option value="BTECH">B.Tech - Bachelor of Technology</option>
+                                <option value="MCA">MCA - Master of Computer Applications</option>
+                                <option value="MBA">MBA - Master of Business Administration</option>
+                                <option value="MSC">MSc - Master of Science</option>
+                                <option value="OTHER">Other</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Phone Number</label>
+                            <input type="tel" placeholder="+91 1234567890">
+                        </div>
                     </div>
 
                     <h3>Change Password</h3>
@@ -162,7 +180,7 @@
                 avatar.textContent = firstLetter;
             });
             document.querySelector('.sidebar .user-info h3').textContent = currentUser.name;
-            document.querySelector('.sidebar .user-info p').textContent = 'Semester ' + currentUser.semester;
+            document.querySelector('.sidebar .user-info p').textContent = (currentUser.course || 'BCA') + ' | Semester ' + currentUser.semester;
             
             document.querySelector('.profile-avatar-large').textContent = firstLetter;
             document.querySelector('.profile-info h2').textContent = currentUser.name;
@@ -173,7 +191,8 @@
             document.querySelectorAll('input[type="text"]')[1].value = currentUser.uucms;
             document.querySelector('input[type="email"]').value = currentUser.email;
             document.querySelector('input[type="tel"]').value = currentUser.phone || '';
-            document.querySelector('select').value = currentUser.semester;
+            document.getElementById('semesterSelect').value = currentUser.semester;
+            document.getElementById('courseSelect').value = currentUser.course || 'BCA';
             
             loadStatistics();
         }
@@ -226,7 +245,8 @@
             const updatedName = document.querySelector('input[type="text"]').value;
             const updatedEmail = document.querySelector('input[type="email"]').value;
             const updatedPhone = document.querySelector('input[type="tel"]').value;
-            const updatedSemester = document.querySelector('select').value;
+            const updatedSemester = document.getElementById('semesterSelect').value;
+            const updatedCourse = document.getElementById('courseSelect').value;
             const btn = this.querySelector('button[type="submit"]');
             btn.disabled = true;
             btn.textContent = 'Saving...';
@@ -238,23 +258,22 @@
                     const res = await fetch('/api/users/profile', {
                         method: 'PUT',
                         headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
-                        body: JSON.stringify({ name: updatedName, email: updatedEmail, semester: parseInt(updatedSemester) })
+                        body: JSON.stringify({ name: updatedName, email: updatedEmail, semester: parseInt(updatedSemester), course: updatedCourse })
                     });
                     const data = await res.json();
                     if (res.ok && data.user) {
-                        // Update localStorage with server response
                         const user = JSON.parse(localStorage.getItem('currentUser'));
-                        Object.assign(user, data.user, { phone: updatedPhone });
+                        Object.assign(user, data.user, { phone: updatedPhone, course: updatedCourse });
                         localStorage.setItem('currentUser', JSON.stringify(user));
                     }
-                } catch (e) { /* fail gracefully, still save locally */ }
+                } catch (e) { /* fail gracefully */ }
             }
 
-            // Always update localStorage
             currentUser.name = updatedName;
             currentUser.email = updatedEmail;
             currentUser.phone = updatedPhone;
             currentUser.semester = parseInt(updatedSemester);
+            currentUser.course = updatedCourse;
             localStorage.setItem('currentUser', JSON.stringify(currentUser));
 
             btn.disabled = false;
