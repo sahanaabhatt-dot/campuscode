@@ -93,8 +93,15 @@ if (process.env.DATABASE_URL) {
             status VARCHAR(20) NOT NULL,
             submitted_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         );
-    `).then(() => console.log('PostgreSQL tables ready'))
-      .catch(err => console.error('Table creation error:', err));
+    `).then(() => {
+        console.log('PostgreSQL tables ready');
+        // Add course column if it doesn't exist (migration)
+        return pgPool.query(`
+            ALTER TABLE users ADD COLUMN IF NOT EXISTS course VARCHAR(50) DEFAULT 'BCA';
+        `);
+    })
+    .then(() => console.log('PostgreSQL migrations done'))
+    .catch(err => console.error('Table creation error:', err));
 
 } else {
     // MySQL for local development
